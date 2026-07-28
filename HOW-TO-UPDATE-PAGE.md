@@ -5,7 +5,7 @@ holds only a tiny loader (`onboarding-loader.html`), pasted once. To change the
 page, you change the code in GitHub — that's it.
 
 ## The pieces
-- **Repo:** `TKsmalls/webouts-widgets` (public)
+- **Repo:** `WebOuts-Media/webouts-widgets` (public)
 - **File:** `onboarding.js` (the whole widget: styles + form + logic)
 - **Branches:** work lands on `main`; the page serves the **`live`** branch
 - **Bricks loader (one-time paste):** `onboarding-loader.html`

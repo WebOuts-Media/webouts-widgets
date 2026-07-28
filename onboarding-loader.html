@@ -1,11 +1,11 @@
 <!-- WebOuts Onboarding — paste into the Bricks "Code" element on webouts.com/onboarding.
      Loads the currently published version automatically; no cache lag, no hard-refresh needed.
      Publishing is a deliberate step, so work in progress never reaches a client.
-     See HOW-TO-UPDATE-PAGE.md in TKsmalls/webouts-widgets. -->
+     See HOW-TO-UPDATE-PAGE.md in WebOuts-Media/webouts-widgets. -->
 <div id="wo-onboarding-root"></div>
 <script>
 (function () {
-  var repo = 'TKsmalls/webouts-widgets', file = 'onboarding.js', branch = 'live';
+  var repo = 'WebOuts-Media/webouts-widgets', file = 'onboarding.js', branch = 'live';
   function inject(ref) {
     var s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/gh/' + repo + '@' + ref + '/' + file;
