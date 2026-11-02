@@ -92,6 +92,9 @@
     '#wo-inv .seg label:has(input:checked){border-color:var(--navy);background:var(--soft)}',
     '#wo-inv .seg input{width:auto;margin:3px 0 0}',
     '#wo-inv .seg b{display:block;color:var(--navy)}',
+    '#wo-inv#wo-inv .paynote{background:var(--soft);border-left:3px solid var(--navy);border-radius:8px;padding:10px 12px;margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--ink)}',
+    '#wo-inv .paynote a{color:var(--navy);font-weight:600}',
+    '#wo-inv .paper .bk{margin-top:6px}',
     '#wo-inv .line{border:1px solid var(--line);border-radius:10px;padding:14px 14px 2px;margin-bottom:10px;position:relative;background:#fff}',
     '#wo-inv .line .rm{all:unset;cursor:pointer;position:absolute;top:8px;right:10px;color:var(--muted);font-size:13px;padding:4px}',
     '#wo-inv .line .rm:hover{color:#c0392b}',
@@ -206,12 +209,12 @@
   // ---------- Option 2: requirements ----------
   var NEED = [
     ['Your legal name or business name', 'Whoever the check or payment should go to. This is also the name on your 1099.'],
-    ['Your contact info', 'Email and phone, plus your mailing address if you want a paper check.'],
+    ['Your contact info', 'Email, phone and your mailing address. We need the address even if you want a payment link.'],
     ['An invoice number and the invoice date', 'Any numbering works, as long as you never reuse a number.'],
     ['Bill To: WebOuts LLC', 'Use the billing details above.'],
     ['One line for each job', 'The client or project (e.g. Orlando Health, Dr. Smith profile), your role, the date of the work, and the amount.'],
     ['The total amount due', 'In US dollars.'],
-    ['How you want to be paid', 'Either a check (who it is payable to plus a mailing address) or a payment link we can pay without making an account, such as a PayPal or Stripe link.'],
+    ['How you want to be paid', 'Either a check (who it is payable to) or a payment link we can pay without making an account. Links must go to a business account: we do not pay personal accounts. PayPal Business is free to set up. If your link is a personal account or does not work, we mail a paper check to your address instead.'],
     ['A W-9 on file with us', 'Send it once; we keep it for future invoices. Without it we cannot pay you.']
   ];
   var needList = el('ul', { class: 'need' });
@@ -254,11 +257,16 @@
   };
   var mCheck = el('input', { type: 'radio', name: 'wo-pay', value: 'check', checked: '' });
   var mDigital = el('input', { type: 'radio', name: 'wo-pay', value: 'digital' });
-  var addrWrap = field('Mailing address for the check', f.address);
-  var linkWrap = field('Payment link', f.link, { hint: 'Must start with https:// and let us pay without creating an account.' });
+  var addrWrap = field('Mailing address', f.address, { hint: 'Required for everyone. If we cannot pay through your link, we mail a check here.' });
+  var linkWrap = field('Payment link', f.link, { hint: 'Must start with https:// and go to a business account we can pay without creating an account.' });
   linkWrap.hidden = true;
+  var payNote = el('p', { class: 'paynote' }, [
+    'WebOuts does not pay personal accounts (personal PayPal, Venmo, Cash App and similar). A ',
+    el('a', { href: 'https://www.paypal.com/business', target: '_blank', rel: 'noopener', text: 'PayPal Business' }),
+    ' account is free and gives you a link you can put on your invoice. If your link is a personal account or does not work, we mail a paper check to your mailing address instead.'
+  ]);
   function method() { return mDigital.checked ? 'digital' : 'check'; }
-  function syncMethod() { addrWrap.hidden = method() !== 'check'; linkWrap.hidden = method() !== 'digital'; render(); }
+  function syncMethod() { linkWrap.hidden = method() !== 'digital'; render(); }
   mCheck.addEventListener('change', syncMethod); mDigital.addEventListener('change', syncMethod);
 
   var linesBox = el('div');
@@ -309,10 +317,10 @@
     el('h3', { text: '2. How you want to be paid' }),
     el('div', { class: 'seg', role: 'radiogroup' }, [
       el('label', null, [mCheck, el('span', null, [el('b', { text: 'Paper check' }), 'Mailed to you'])]),
-      el('label', null, [mDigital, el('span', null, [el('b', { text: 'Payment link' }), 'PayPal, Stripe or similar'])])
+      el('label', null, [mDigital, el('span', null, [el('b', { text: 'Payment link' }), 'PayPal Business, Stripe or similar'])])
     ]),
     field('Make payment out to', f.payableTo, { optional: true, hint: 'Leave blank to use your name. Use your business name if you have one.' }),
-    addrWrap, linkWrap,
+    payNote, linkWrap, addrWrap,
     el('h3', { text: '3. The work' }),
     linesBox, addBtn,
     el('h3', { text: '4. Extras' }),
@@ -360,9 +368,11 @@
       el('img', { class: 'logo', src: LOGO, alt: 'WebOuts' }),
       el('div', { class: 'title' }, ['INVOICE', el('div', { class: 'no', text: number })])
     ]));
-    var detail = dig ? (f.link.value.trim() || 'Payment link') : (f.address.value.trim() || 'Mailing address');
+    var addr = f.address.value.trim() || 'Mailing address';
+    var detail = dig ? (f.link.value.trim() || 'Payment link') : addr;
+    var backup = dig ? [el('div', { class: 'cap bk', text: 'Backup check address' }), el('div', { class: 'pd', text: addr })] : [];
     paper.appendChild(el('div', { class: 'parties' }, [
-      el('div', null, [el('div', { class: 'cap', text: dig ? 'Contractor (pay via link)' : 'Contractor (make check payable to)' }), el('div', { class: 'pn', text: payee }), el('div', { class: 'pd', text: detail })]),
+      el('div', null, [el('div', { class: 'cap', text: dig ? 'Contractor (pay via link)' : 'Contractor (make check payable to)' }), el('div', { class: 'pn', text: payee }), el('div', { class: 'pd', text: detail })].concat(backup)),
       el('div', null, [el('div', { class: 'cap', text: 'Bill to' }), el('div', { class: 'pn', text: 'WebOuts LLC' }), el('div', { class: 'pd', text: 'adenure@webouts.com' })])
     ]));
     paper.appendChild(el('div', { class: 'meta' }, [
@@ -403,7 +413,7 @@
     'name-required': 'Please enter your full name.',
     'email-invalid': 'Please enter a valid email address so we can send your copy.',
     'payable-to-required': 'Please enter who the payment should go to.',
-    'address-required': 'Please enter the mailing address for your check.',
+    'address-required': 'Please enter your mailing address. We need it even if you choose a payment link.',
     'link-required': 'Please enter your payment link.',
     'link-invalid': 'That payment link does not look right. Paste the full link, starting with https://.',
     'link-not-https': 'Your payment link must start with https://.',
@@ -435,7 +445,7 @@
   function localCheck(p) {
     if (!p.name) return ['name-required', 'name'];
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p.email)) return ['email-invalid', 'email'];
-    if (p.paymentMethod === 'check' && !p.address) return ['address-required', 'payment'];
+    if (!p.address) return ['address-required', 'payment'];
     if (p.paymentMethod === 'digital') {
       if (!p.paymentLink) return ['link-required', 'payment'];
       if (!/^https:\/\//i.test(p.paymentLink)) return ['link-not-https', 'payment'];
@@ -460,7 +470,7 @@
       website: f.hp.value,
       name: f.name.value.trim(), email: f.email.value.trim(), phone: f.phone.value.trim(),
       paymentMethod: method(), payableTo: f.payableTo.value.trim(),
-      address: method() === 'check' ? f.address.value.trim() : '',
+      address: f.address.value.trim(),
       paymentLink: method() === 'digital' ? f.link.value.trim() : '',
       invoiceNumber: f.invoiceNumber.value.trim(), notes: f.notes.value.trim(),
       taxAck: f.ack.checked,
