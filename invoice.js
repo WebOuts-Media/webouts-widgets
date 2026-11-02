@@ -20,7 +20,6 @@
   })();
   var FORM_URL = 'https://forms.monday.com/forms/embed/f1a09557ffe9f2b313cbdf05215c367f?r=use1';
   var BILL_TO = 'WebOuts LLC\nadenure@webouts.com';
-  var CLIENTS = ['Orlando Health', 'Florida Medical Clinic', 'Memorial Sloan Kettering', 'Griffin Health'];
   var ROLES = ['Camera', 'Audio', 'Hair & Makeup', 'Talent', 'Coach', 'Production Assistant', 'Video Editor', 'Colorist', 'Script Writer'];
   var MAX_LINES = 40;
 
@@ -262,16 +261,15 @@
   function syncMethod() { addrWrap.hidden = method() !== 'check'; linkWrap.hidden = method() !== 'digital'; render(); }
   mCheck.addEventListener('change', syncMethod); mDigital.addEventListener('change', syncMethod);
 
-  var dlClients = el('datalist', { id: 'wo-inv-clients' }, CLIENTS.map(function (c) { return el('option', { value: c }); }));
-  var dlRoles = el('datalist', { id: 'wo-inv-roles' }, ROLES.map(function (c) { return el('option', { value: c }); }));
   var linesBox = el('div');
   var lines = [];
   function addLine() {
     if (lines.length >= MAX_LINES) return;
     var L = {
-      client: el('input', { type: 'text', list: 'wo-inv-clients', maxlength: '80', placeholder: 'e.g. Orlando Health' }),
+      client: el('input', { type: 'text', autocomplete: 'off', maxlength: '80', placeholder: 'e.g. Orlando Health' }),
       project: el('input', { type: 'text', maxlength: '200', placeholder: 'e.g. Profile filming, Dr. Smith' }),
-      role: el('input', { type: 'text', list: 'wo-inv-roles', maxlength: '40', placeholder: 'e.g. Camera' }),
+      roleSel: el('select', null, [el('option', { value: '', text: 'Choose a role' })].concat(ROLES.map(function (r) { return el('option', { value: r, text: r }); }), [el('option', { value: 'other', text: 'Other' })])),
+      roleOther: el('input', { type: 'text', autocomplete: 'off', maxlength: '40', placeholder: 'Type your role', hidden: '' }),
       date: el('input', { type: 'date', max: todayIso() }),
       amount: el('input', { type: 'number', inputmode: 'decimal', min: '0.01', step: '0.01', placeholder: '0.00' })
     };
@@ -281,11 +279,16 @@
         if (lines.length === 1) return;
         lines.splice(lines.indexOf(L), 1); L.node.remove(); renumber(); render();
       } }),
-      el('div', { class: 'grid2' }, [field('Client', L.client, { optional: true }), field('Your role', L.role, { optional: true })]),
+      el('div', { class: 'grid2' }, [field('Client', L.client, { optional: true }), field('Your role', el('div', null, [L.roleSel, L.roleOther]), { optional: true })]),
       field('What you did', L.project),
       el('div', { class: 'grid2' }, [field('Date of the work', L.date), field('Amount (USD)', L.amount)])
     ]);
-    ['client', 'project', 'role', 'date', 'amount'].forEach(function (k) { L[k].addEventListener('input', render); });
+    L.roleSel.addEventListener('change', function () {
+      L.roleOther.hidden = L.roleSel.value !== 'other';
+      if (!L.roleOther.hidden) L.roleOther.focus();
+      render();
+    });
+    ['client', 'project', 'roleOther', 'date', 'amount'].forEach(function (k) { L[k].addEventListener('input', render); });
     lines.push(L); linesBox.appendChild(L.node); renumber(); render();
   }
   function renumber() {
@@ -311,7 +314,7 @@
     field('Make payment out to', f.payableTo, { optional: true, hint: 'Leave blank to use your name. Use your business name if you have one.' }),
     addrWrap, linkWrap,
     el('h3', { text: '3. The work' }),
-    linesBox, addBtn, dlClients, dlRoles,
+    linesBox, addBtn,
     el('h3', { text: '4. Extras' }),
     field('Your invoice number', f.invoiceNumber, { optional: true }),
     field('Notes', f.notes, { optional: true }),
@@ -338,7 +341,7 @@
   // ---------- preview ----------
   function readLines() {
     return lines.map(function (L) {
-      return { client: L.client.value.trim(), project: L.project.value.trim(), role: L.role.value.trim(), date: L.date.value, amount: L.amount.value === '' ? NaN : Number(L.amount.value) };
+      return { client: L.client.value.trim(), project: L.project.value.trim(), role: L.roleSel.value === 'other' ? L.roleOther.value.trim() : L.roleSel.value, date: L.date.value, amount: L.amount.value === '' ? NaN : Number(L.amount.value) };
     });
   }
   function render() {
