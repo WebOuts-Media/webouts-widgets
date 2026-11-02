@@ -8,11 +8,13 @@
   'use strict';
 
   var LIVE_API = 'https://live1-service-13475384-d7871bdd.us.monday.app/pub/invoice-builder';
-  // ?api=<monday.app origin> lets us test against a server draft before promote.
+  // ?api=<draft origin> lets us test against a ClockUp server draft before promote.
+  // Only OUR app's hosts (account 13475384, app d7871bdd) are accepted, so a
+  // crafted link cannot send someone's invoice to another server.
   var API = (function () {
     try {
       var o = new URLSearchParams(location.search).get('api');
-      if (o && /^https:\/\/[a-z0-9-]+\.us\.monday\.app$/.test(o)) return o + '/pub/invoice-builder';
+      if (o && /^https:\/\/[a-z0-9]+-service-13475384-d7871bdd\.us\.monday\.app$/.test(o)) return o + '/pub/invoice-builder';
     } catch (e) { /* ignore */ }
     return LIVE_API;
   })();
