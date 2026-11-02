@@ -38,11 +38,15 @@
     '#wo-inv{--navy:#07378C;--orange:#E26337;--ink:#1f2430;--muted:#5b6472;--line:#e6e9ef;--soft:#f2f6ff;--zebra:#f6f8fb;--ok:#2F8F5C;',
     'font-family:"Poppins",Arial,Helvetica,sans-serif;color:var(--ink);max-width:1100px;margin:0 auto;padding:32px 16px 64px;box-sizing:border-box;line-height:1.55}',
     '#wo-inv *,#wo-inv *::before,#wo-inv *::after{box-sizing:border-box}',
-    '#wo-inv h1{font-size:clamp(28px,4vw,40px);color:var(--navy);margin:0 0 8px;font-weight:700;line-height:1.15}',
-    '#wo-inv h2{font-size:24px;color:var(--navy);margin:0 0 6px;font-weight:700}',
-    '#wo-inv h3{font-size:15px;color:var(--navy);margin:22px 0 10px;font-weight:600}',
-    '#wo-inv p{margin:0 0 12px}',
-    '#wo-inv .lede{font-size:17px;color:var(--muted);max-width:720px}',
+    // The site theme caps heading widths (h2 ~698px, h3 ~436px) and adds flow
+    // spacing; the doubled id outranks it so the page lays out the same anywhere.
+    '#wo-inv#wo-inv :is(h1,h2,h3,p){max-width:none;text-align:inherit;text-wrap:wrap;letter-spacing:normal;padding:0}',
+    '#wo-inv#wo-inv h1{font-size:clamp(28px,4vw,40px);color:var(--navy);margin:0 0 8px;font-weight:700;line-height:1.15}',
+    '#wo-inv#wo-inv h2{font-size:24px;color:var(--navy);margin:0 0 6px;font-weight:700;line-height:1.25}',
+    '#wo-inv#wo-inv h3{font-size:15px;color:var(--navy);margin:22px 0 10px;font-weight:600;line-height:1.35}',
+    '#wo-inv#wo-inv p{margin:0 0 12px;font-size:15px;line-height:1.55}',
+    '#wo-inv#wo-inv .lede{font-size:17px;color:var(--muted);max-width:720px}',
+    '#wo-inv#wo-inv .done h2{margin:0 0 8px}',
     '#wo-inv .tax{display:flex;gap:12px;align-items:flex-start;background:#fff7f3;border:1px solid #f6d3c4;border-left:4px solid var(--orange);border-radius:10px;padding:14px 16px;margin:20px 0 28px;font-size:15px}',
     '#wo-inv .tax svg{flex:0 0 22px;margin-top:2px}',
     '#wo-inv .tax strong{color:var(--ink)}',
@@ -54,6 +58,8 @@
     '#wo-inv .path .num{font-size:12px;font-weight:600;color:var(--orange);letter-spacing:.06em;text-transform:uppercase}',
     '#wo-inv .path .t{font-size:17px;font-weight:600;color:var(--navy);line-height:1.3}',
     '#wo-inv .path .d{font-size:14px;color:var(--muted)}',
+    // The theme makes every <section> a centered flex column with a ~62px gap.
+    '#wo-inv#wo-inv .panel{display:block;gap:0;align-items:initial;margin:0;min-height:0;max-width:none;width:auto;padding:28px}',
     '#wo-inv .panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px;box-shadow:0 1px 3px rgba(16,24,40,.06)}',
     '#wo-inv .panel[hidden]{display:none}',
     '#wo-inv .formframe{width:100%;height:760px;border:0;border-radius:10px;background:var(--zebra)}',
@@ -61,7 +67,8 @@
     '#wo-inv ul.need li{display:flex;gap:10px;align-items:flex-start}',
     '#wo-inv ul.need li svg{flex:0 0 18px;margin-top:4px}',
     '#wo-inv .billto{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;background:var(--soft);border-radius:10px;padding:16px 18px;margin:8px 0 16px}',
-    '#wo-inv .billto pre{margin:0;font:inherit;font-weight:500;white-space:pre-line}',
+    '#wo-inv#wo-inv .billto{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px;text-align:left}',
+    '#wo-inv#wo-inv .billto .bt{flex:1 1 auto;min-width:0;margin:0;font:inherit;font-size:16px;font-weight:500;color:var(--ink);white-space:pre-line;background:none;padding:0}',
     '#wo-inv .btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px;padding:11px 20px;border-radius:9px;transition:filter .2s,background .2s;text-align:center}',
     '#wo-inv .btn:focus-visible{outline:3px solid var(--orange);outline-offset:2px}',
     '#wo-inv .btn.primary{background:var(--orange);color:#fff}',
@@ -93,7 +100,7 @@
     '#wo-inv .ack{display:flex;gap:10px;align-items:flex-start;font-size:14px;background:#fff7f3;border:1px solid #f6d3c4;border-radius:10px;padding:12px;margin:16px 0}',
     '#wo-inv .ack input{width:auto;margin:3px 0 0;flex:0 0 auto}',
     '#wo-inv .hp{position:absolute !important;left:-9999px !important;width:1px;height:1px;overflow:hidden}',
-    '#wo-inv .err{color:#c0392b;font-size:14px;margin:10px 0 0;min-height:1em}',
+    '#wo-inv#wo-inv .err{color:#c0392b;font-size:14px;margin:10px 0 0;min-height:1em}',
     '#wo-inv .previewwrap{position:sticky;top:24px}',
     '#wo-inv .previewlabel{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}',
     // Paper preview, modelled on the PDF ClockUp renders (server/invoice-pdf.js).
@@ -124,7 +131,7 @@
     '#wo-inv .done .acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0}',
     '#wo-inv .pdfframe{width:100%;height:720px;border:1px solid var(--line);border-radius:8px;margin-top:8px}',
     '@media (max-width:860px){#wo-inv .builder{grid-template-columns:1fr}#wo-inv .builder .fields,#wo-inv .builder .send,#wo-inv .builder .previewwrap{grid-column:1;grid-row:auto}#wo-inv .previewwrap{margin-top:12px}#wo-inv .previewwrap{position:static}#wo-inv .pdfframe{display:none}}',
-    '@media (max-width:720px){#wo-inv .paths{grid-template-columns:1fr}#wo-inv .panel{padding:20px 16px}#wo-inv .grid2{grid-template-columns:1fr}#wo-inv .formframe{height:820px}}',
+    '@media (max-width:720px){#wo-inv .paths{grid-template-columns:1fr}#wo-inv#wo-inv .panel{padding:20px 16px}#wo-inv .grid2{grid-template-columns:1fr}#wo-inv .formframe{height:820px}}',
     '@media (max-width:480px){#wo-inv .paper{aspect-ratio:auto;min-height:420px;padding:18px 14px}#wo-inv .paper .parties{grid-template-columns:1fr}}'
   ].join('\n');
   var st = document.createElement('style');
@@ -202,7 +209,7 @@
     ['Your legal name or business name', 'Whoever the check or payment should go to. This is also the name on your 1099.'],
     ['Your contact info', 'Email and phone, plus your mailing address if you want a paper check.'],
     ['An invoice number and the invoice date', 'Any numbering works, as long as you never reuse a number.'],
-    ['Bill To: WebOuts LLC', 'Use the billing details below.'],
+    ['Bill To: WebOuts LLC', 'Use the billing details above.'],
     ['One line for each job', 'The client or project (e.g. Orlando Health, Dr. Smith profile), your role, the date of the work, and the amount.'],
     ['The total amount due', 'In US dollars.'],
     ['How you want to be paid', 'Either a check (who it is payable to plus a mailing address) or a payment link we can pay without making an account, such as a PayPal or Stripe link.'],
@@ -222,7 +229,7 @@
     el('h2', { text: 'What your invoice needs' }),
     el('p', { text: 'Use your own system. Just make sure your invoice includes everything below, save it as a PDF, and upload it.' }),
     el('h3', { text: 'Bill to' }),
-    el('div', { class: 'billto' }, [el('pre', { text: BILL_TO }), copyBtn]),
+    el('div', { class: 'billto' }, [el('div', { class: 'bt', text: BILL_TO }), copyBtn]),
     el('h3', { text: 'Checklist' }),
     needList,
     el('div', { style: 'margin-top:20px' }, [el('button', { class: 'btn primary', type: 'button', text: 'Upload my invoice', onclick: function () { show('upload', true); } })])
@@ -324,7 +331,7 @@
   var donePane = el('div', { hidden: '' });
   panels.builder = el('section', { class: 'panel', id: 'wo-panel-builder', role: 'tabpanel', 'aria-labelledby': 'wo-tab-builder', hidden: '' }, [
     el('h2', { text: 'Make my invoice' }),
-    el('p', { text: "Fill in the blanks. Your invoice builds on the right as you type. When you send it, we email you a PDF copy and it goes straight to our billing team." }),
+    el('p', { text: 'Fill in the blanks and watch your invoice build in the preview. When you send it, we email you a PDF copy and it goes straight to our billing team.' }),
     builderBody, donePane
   ]);
 
