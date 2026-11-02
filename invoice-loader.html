@@ -1,0 +1,19 @@
+<!-- WebOuts Submit an Invoice: paste into the Bricks "Code" element on webouts.com/invoice.
+     Loads the currently published version automatically; no cache lag, no hard-refresh needed.
+     Publishing is a deliberate step, so work in progress never reaches a client.
+     See HOW-TO-UPDATE-PAGE.md in WebOuts-Media/webouts-widgets. -->
+<div id="wo-invoice-root"></div>
+<script>
+(function () {
+  var repo = 'WebOuts-Media/webouts-widgets', file = 'invoice.js', branch = 'live';
+  function inject(ref) {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/gh/' + repo + '@' + ref + '/' + file;
+    document.head.appendChild(s);
+  }
+  fetch('https://api.github.com/repos/' + repo + '/commits/' + branch, { headers: { Accept: 'application/vnd.github.sha' } })
+    .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+    .then(function (sha) { inject(/^[0-9a-f]{40}$/.test(sha.trim()) ? sha.trim() : branch); })
+    .catch(function () { inject(branch); });
+})();
+</script>
