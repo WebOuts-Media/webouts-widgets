@@ -622,7 +622,7 @@
   #wo-onb .st-row.st-on .st-name{color:#7b8698}
   #wo-onb .st-own{font-size:11px;font-weight:700;letter-spacing:.3px;border-radius:20px;padding:3px 9px;white-space:nowrap;color:#07378C;background:#eef2fb;border:1px solid #d6e3ff}
   #wo-onb .st-own.st-wo{color:#b3411f;background:#FDEFE9;border-color:#f3c9bb}
-  #wo-onb .st-own.st-both{color:#4a5568;background:#f2f4f7;border-color:#dfe4ea}
+  #wo-onb .sec h2 .st-own{flex:0 0 auto}
   #wo-onb .st-err{display:none;margin:10px 0 0;font-size:13px;color:#b3411f}
   #wo-onb .sec .chev{width:9px;height:9px;border-right:2px solid #9aa4b4;border-bottom:2px solid #9aa4b4;transform:rotate(-45deg);transition:transform .2s ease;flex:0 0 auto;margin-top:-3px}
   #wo-onb .sec.open .chev{transform:rotate(45deg)}
@@ -718,6 +718,15 @@
     #wo-onb .sec.has-due .done-label{display:none}
     #wo-onb .st-row{grid-template-columns:24px 1fr;row-gap:4px}
     #wo-onb .st-own{grid-column:2;justify-self:start}
+    #wo-onb .sec h2 .st-own{font-size:10px;padding:2px 7px;letter-spacing:.2px}
+    /* with an owner tag the header has too many chips for one line: title and check on
+       the first line, owner and deadline on a second, lined up under the title */
+    #wo-onb .sec.has-own h2{flex-wrap:wrap;row-gap:7px}
+    #wo-onb .sec.has-own h2 .ttl{flex:1 1 0;min-width:0}
+    #wo-onb .sec.has-own h2::after{content:'';flex-basis:100%;height:0;order:1;margin:0 -11px 0 0}
+    #wo-onb .sec.has-own h2 .st-own,#wo-onb .sec.has-own h2 .due{order:2}
+    #wo-onb .sec.has-own h2 .st-first{margin-left:37px}
+    #wo-onb .sec.has-own.has-due .done-label{display:inline}
     /* the placeholder is an alignment aid; on a phone it would just wrap the title */
     #wo-onb .sec .due.none{display:none}
     #wo-onb .wo-cs-card{flex:1 1 100%}
@@ -1398,8 +1407,37 @@
   // Steps come from the subitems of the client's Monday item. The Form Checklist Group
   // column picks the box; a box with no steps stays hidden.
   var STEP_SECS = { 'Vendor setup & budget': 'vendor', 'Physician roster': 'roster', 'Prototype script & sample video': 'prototype', 'Systems & launch': 'launch' };
+  // Every box says who it is waiting on. The ten information sections are the client's;
+  // a step box names whoever still has an open step in it. The client's label is taken
+  // from the steps, so a client with no steps sees no tags at all.
+  function isWO(o) { return /webouts/i.test(String(o || '')); }
+  function ownerTag(o) {
+    var el = document.createElement('span');
+    el.className = 'st-own' + (isWO(o) ? ' st-wo' : '');
+    el.textContent = o;
+    el.title = isWO(o) ? 'WebOuts is doing this.' : 'This one is for your team.';
+    return el;
+  }
+  function setOwners(sec, owners) {
+    var h = sec.querySelector('h2');
+    Array.prototype.forEach.call(h.querySelectorAll('.st-own'), function (el) { h.removeChild(el); });
+    var before = h.querySelector('.due') || h.querySelector('.done-toggle');
+    owners.forEach(function (o, i) { var el = ownerTag(o); if (!i) el.className += ' st-first'; h.insertBefore(el, before); });
+    sec.classList.toggle('has-own', owners.length > 0);
+    // The title is a bare text node; give it an element so a phone can lay the header out.
+    if (owners.length && !h.querySelector('.ttl')) {
+      Array.prototype.forEach.call(h.childNodes, function (n) {
+        if (n.nodeType !== 3 || !n.nodeValue.trim()) return;
+        var t = document.createElement('span'); t.className = 'ttl'; t.textContent = n.nodeValue.trim();
+        h.replaceChild(t, n);
+      });
+    }
+  }
   function applySteps(tasks) {
     tasks = Array.isArray(tasks) ? tasks : [];
+    var client = '';
+    tasks.forEach(function (t) { if (!client && t && t.owner && !isWO(t.owner)) client = String(t.owner); });
+    infoSecs.forEach(function (sec) { setOwners(sec, client ? [client] : []); });
     secs.forEach(function (sec) {
       if (!sec.classList.contains('step-sec')) return;
       var slug = sec.getAttribute('data-sec');
@@ -1411,6 +1449,13 @@
         var all = mine.length > 0 && mine.every(function (t) { return t.done; });
         sec.classList.toggle('filled', all);
         sec.querySelector('.done-toggle').setAttribute('aria-checked', all ? 'true' : 'false');
+        // Whoever still has an open step; once the box is finished, everyone who had one.
+        var who = [];
+        mine.filter(function (t) { return all || !t.done; }).forEach(function (t) {
+          var o = String(t.owner || ''); if (o && who.indexOf(o) < 0) who.push(o);
+        });
+        who.sort(function (a, b) { return (isWO(a) ? 1 : 0) - (isWO(b) ? 1 : 0); });
+        setOwners(sec, who);
       }
       mine.forEach(function (t) {
         var row = document.createElement('div');
@@ -1439,11 +1484,7 @@
             .then(function () { tick.disabled = locked; });
         });
         var name = document.createElement('span'); name.className = 'st-name'; name.textContent = t.name;
-        var o = String(t.owner || '');
-        var wo = /webouts/i.test(o), both = wo && o.replace(/webouts/i, '').replace(/[+&,\s]|and/gi, '').length > 0;
-        var own = document.createElement('span');
-        own.className = 'st-own' + (both ? ' st-both' : wo ? ' st-wo' : '');
-        own.textContent = both ? 'Both' : o;
+        var own = ownerTag(String(t.owner || ''));
         row.appendChild(tick); row.appendChild(name); row.appendChild(own);
         paint();
         box.appendChild(row);
