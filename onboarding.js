@@ -623,6 +623,16 @@
   #wo-onb .st-own{font-size:11px;font-weight:700;letter-spacing:.3px;border-radius:20px;padding:3px 9px;white-space:nowrap;color:#07378C;background:#eef2fb;border:1px solid #d6e3ff}
   #wo-onb .st-own.st-wo{color:#b3411f;background:#FDEFE9;border-color:#f3c9bb}
   #wo-onb .sec h2 .st-own{flex:0 0 auto}
+  #wo-onb .own-tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 14px}
+  #wo-onb .own-tile{border:1px solid #d6e3ff;border-radius:12px;padding:14px 16px;background:#f6f9ff}
+  #wo-onb .own-tile.st-wo{border-color:#f3c9bb;background:#FEF6F2}
+  #wo-onb .own-who{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#07378C}
+  #wo-onb .own-tile.st-wo .own-who{color:#b3411f}
+  #wo-onb .own-num{font-size:22px;font-weight:800;color:#1d2b45;line-height:1.2;margin:2px 0 0}
+  #wo-onb .own-num small{font-size:13px;font-weight:600;color:#5d6b82}
+  #wo-onb .own-sub{font-size:12px;color:#5d6b82;margin:1px 0 8px}
+  #wo-onb .own-bar{height:6px;border-radius:3px;background:#e3e9f3;overflow:hidden}
+  #wo-onb .own-bar>span{display:block;height:100%;border-radius:3px;background:#2F8F5C}
   #wo-onb .st-err{display:none;margin:10px 0 0;font-size:13px;color:#b3411f}
   #wo-onb .sec .chev{width:9px;height:9px;border-right:2px solid #9aa4b4;border-bottom:2px solid #9aa4b4;transform:rotate(-45deg);transition:transform .2s ease;flex:0 0 auto;margin-top:-3px}
   #wo-onb .sec.open .chev{transform:rotate(45deg)}
@@ -719,6 +729,9 @@
     #wo-onb .st-row{grid-template-columns:24px 1fr;row-gap:4px}
     #wo-onb .st-own{grid-column:2;justify-self:start}
     #wo-onb .sec h2 .st-own{font-size:10px;padding:2px 7px;letter-spacing:.2px}
+    #wo-onb .own-tiles{gap:10px}
+    #wo-onb .own-tile{padding:11px 12px}
+    #wo-onb .own-num{font-size:19px}
     /* with an owner tag the header has too many chips for one line: title and check on
        the first line, owner and deadline on a second, lined up under the title */
     #wo-onb .sec.has-own h2{flex-wrap:wrap;row-gap:7px}
@@ -817,6 +830,8 @@
     <p class="sub" id="wo-welcomesub">This is how we get ready to film your providers. Most sections take a couple of minutes, and a few, like your provider list, you may want to gather first. You don’t need every answer today. This works best as a team effort: copy your private link above and pass it around so the right person fills in each section. Everything saves as you go, so anyone can stop and pick up later.</p>
 
     <div id="wo-form">
+      <div id="wo-own" class="own-tiles" style="display:none"></div>
+
       <div class="sec" data-sec="org">
         <h2><span class="num">1</span> Your organization</h2>
         <div class="secbody">
@@ -1433,10 +1448,37 @@
       });
     }
   }
+  // Two tiles above the list: how much each side has left. The client's count is their
+  // information sections plus their steps; WebOuts' count is its steps.
+  var stepList = [], clientName = '';
+  function updateOwnerTiles() {
+    var box = document.getElementById('wo-own');
+    if (!box) return;
+    box.innerHTML = '';
+    box.style.display = clientName ? '' : 'none';
+    if (!clientName) return;
+    function tile(who, wo, done, total) {
+      var t = document.createElement('div'); t.className = 'own-tile' + (wo ? ' st-wo' : '');
+      var a = document.createElement('div'); a.className = 'own-who'; a.textContent = who;
+      var b = document.createElement('div'); b.className = 'own-num'; b.textContent = String(total - done) + ' ';
+      var sm = document.createElement('small'); sm.textContent = total - done === 0 ? 'to do, all finished' : 'to do'; b.appendChild(sm);
+      var c = document.createElement('div'); c.className = 'own-sub'; c.textContent = done + ' of ' + total + ' done';
+      var d = document.createElement('div'); d.className = 'own-bar';
+      var f = document.createElement('span'); f.style.width = (total ? Math.round(done / total * 100) : 0) + '%'; d.appendChild(f);
+      t.appendChild(a); t.appendChild(b); t.appendChild(c); t.appendChild(d);
+      box.appendChild(t);
+    }
+    var cl = stepList.filter(function (t) { return !isWO(t.owner); }), wo = stepList.filter(function (t) { return isWO(t.owner); });
+    var isDone = function (t) { return t.done; };
+    tile(clientName, false, infoSecs.filter(function (s) { return s.classList.contains('filled'); }).length + cl.filter(isDone).length, infoSecs.length + cl.length);
+    tile('WebOuts', true, wo.filter(isDone).length, wo.length);
+  }
   function applySteps(tasks) {
     tasks = Array.isArray(tasks) ? tasks : [];
     var client = '';
     tasks.forEach(function (t) { if (!client && t && t.owner && !isWO(t.owner)) client = String(t.owner); });
+    clientName = client;
+    stepList = tasks.filter(function (t) { return t && t.name && t.owner && STEP_SECS[t.group]; });
     infoSecs.forEach(function (sec) { setOwners(sec, client ? [client] : []); });
     secs.forEach(function (sec) {
       if (!sec.classList.contains('step-sec')) return;
@@ -1456,6 +1498,7 @@
         });
         who.sort(function (a, b) { return (isWO(a) ? 1 : 0) - (isWO(b) ? 1 : 0); });
         setOwners(sec, who);
+        updateOwnerTiles();
       }
       mine.forEach(function (t) {
         var row = document.createElement('div');
@@ -1791,6 +1834,7 @@
     var txt = document.getElementById('wo-progtxt');
     if (fill) fill.style.width = (total ? Math.round(done / total * 100) : 0) + '%';
     if (txt) txt.textContent = done + ' of ' + total + ' sections done';
+    updateOwnerTiles();
   }
 
   document.getElementById('wo-submit').addEventListener('click', function () {
