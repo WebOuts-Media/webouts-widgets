@@ -6,6 +6,7 @@
 (function () {
   var API = "https://webouts.app.n8n.cloud/webhook/onboarding-api";
   var UPLOAD = "https://webouts.app.n8n.cloud/webhook/onboarding-upload";
+  var TASKS = "https://webouts.app.n8n.cloud/webhook/onboarding-tasks";
   var MAX = 10 * 1024 * 1024; // 10 MB per file
 
   // ---- table definitions (rendered + wired generically) ----
@@ -659,6 +660,26 @@
   #wo-onb .tasks.stage .sec{margin:0 0 10px}
   #wo-onb .tasks.stage .sec:last-child{margin-bottom:0}
   #wo-onb #wo-form.staged .sec h2 .num{display:none}
+  /* editing the steps on the page */
+  #wo-onb .tasks .t-editbtn{-webkit-appearance:none;appearance:none;border:1px solid #cfdcf7;background:#fff;color:#07378C;font-family:inherit;font-size:12px;font-weight:700;line-height:1.2;padding:9px 16px;border-radius:22px;cursor:pointer;width:auto;margin:0}
+  #wo-onb .tasks .t-editbtn:hover{border-color:#07378C}
+  #wo-onb .tasks .t-editbtn[aria-pressed="true"]{background:#2F8F5C;border-color:#2F8F5C;color:#fff}
+  #wo-onb .tasks .t-err{color:#b3411f;background:#FDEFE9;border:1px solid #f3c9bb;border-radius:8px;padding:8px 12px;font-size:13px;margin:0 0 12px}
+  #wo-onb .tasks button.t-box{-webkit-appearance:none;appearance:none;padding:0;font-family:inherit;cursor:pointer;box-sizing:border-box;min-width:0}
+  #wo-onb .tasks button.t-box:hover{border-color:#2F8F5C;color:#9fd3b6}
+  #wo-onb .tasks .t-row.t-done button.t-box:hover{color:#fff;filter:brightness(1.1)}
+  #wo-onb .tasks .t-edit{-webkit-appearance:none;appearance:none;flex:0 0 auto;border:0;background:transparent;color:#07378C;font-family:inherit;font-size:12px;font-weight:600;text-decoration:underline;cursor:pointer;padding:0 2px;margin:2px 0 0;width:auto}
+  #wo-onb .tasks .t-add{-webkit-appearance:none;appearance:none;display:block;width:100%;box-sizing:border-box;border:1px dashed #cdd4df;background:transparent;color:#5b6472;font-family:inherit;font-size:13px;font-weight:600;border-radius:8px;padding:8px 10px;margin:6px 0 10px;cursor:pointer;text-align:left}
+  #wo-onb .tasks .t-add:hover{border-color:#07378C;color:#07378C}
+  #wo-onb .tasks .t-editor{padding:10px 0}
+  #wo-onb .tasks .t-row + .t-editor,#wo-onb .tasks .t-editor + .t-row{border-top:1px solid #eef1f5}
+  #wo-onb .tasks .t-editor input[type=text]{display:block;width:100%;box-sizing:border-box;font-family:inherit;font-size:14px;padding:9px 10px;border:1px solid #cdd4df;border-radius:8px;margin:0 0 8px;background:#fff}
+  #wo-onb .tasks .t-editline{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  #wo-onb .tasks .t-editline select{font-family:inherit;font-size:12px;padding:7px 8px;border:1px solid #cdd4df;border-radius:8px;background:#fff;color:#1f2430;width:auto;max-width:100%;margin:0}
+  #wo-onb .tasks .t-editline button{-webkit-appearance:none;appearance:none;font-family:inherit;font-size:12px;font-weight:700;line-height:1.2;border-radius:8px;padding:8px 12px;cursor:pointer;width:auto;margin:0;border:1px solid #cdd4df;background:#fff;color:#1f2430}
+  #wo-onb .tasks .t-editline .t-save{background:#07378C;border-color:#07378C;color:#fff}
+  #wo-onb .tasks .t-editline .t-remove{margin-left:auto;color:#b3411f;border-color:#f3c9bb}
+  #wo-onb #wo-form.t-busy .tasks{opacity:.55;pointer-events:none}
   @media (max-width:640px){
     #wo-onb .tasks{padding:16px 14px}
     #wo-onb .tasks.stage{padding:14px 10px}
@@ -1012,6 +1033,15 @@
   function saved(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
   function remember(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function newToken() {
+    // 14 characters from an alphabet with no look-alikes (about 69 bits). A full UUID made
+    // the private link long enough to look alarming when pasted into an email.
+    var A = 'abcdefghjkmnpqrstuvwxyz23456789', out = '';
+    try {
+      var buf = new Uint8Array(14); crypto.getRandomValues(buf);
+      // 248 is the largest multiple of 31 under 256, so skipping above it keeps every letter equally likely
+      for (var i = 0; i < buf.length; i++) out += buf[i] < 248 ? A.charAt(buf[i] % 31) : A.charAt(Math.floor(Math.random() * 31));
+      return out;
+    } catch (e) {}
     return crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2);
   }
   function looksLikeToken(s) { return /^[A-Za-z0-9-]{8,64}$/.test(s); }
@@ -1393,6 +1423,26 @@
   // Which stage of the checklist each form section belongs to, by stage position. With
   // fewer stages than this expects, the later sections land in the last one.
   var SEC_STAGE = { org: 0, people: 0, billing: 0, look: 1, brand: 1, resources: 1, providers: 2, filming: 2, samples: 3, misc: 3 };
+  // Anyone holding the form link may add, edit, tick off or remove steps (Evan, 2026-11-10:
+  // other departments need to add their own). The server only lets a link touch its own steps.
+  var curTasks = [], curDue = null, taskEdit = false, taskBusy = false, taskErr = '';
+  function taskCall(body, onOk) {
+    if (taskBusy || preview || locked || !token) return;
+    taskBusy = true; taskErr = '';
+    document.getElementById('wo-form').classList.add('t-busy');
+    body.token = token;
+    function finish(err) {
+      taskBusy = false; taskErr = err || '';
+      document.getElementById('wo-form').classList.remove('t-busy');
+      applyTasks(curTasks, curDue);
+    }
+    postJSON(TASKS, body)
+      .then(function (res) {
+        if (res && res.ok === true) { onOk(res); finish(''); }
+        else finish((res && res.error) || 'That change was not saved. Please try again.');
+      })
+      .catch(function () { finish('That change was not saved. Check your connection and try again.'); });
+  }
   function applyTasks(tasks, due) {
     var box = document.getElementById('wo-tasks');
     var form = document.getElementById('wo-form');
@@ -1406,6 +1456,8 @@
     }
     form.classList.remove('staged');
     tasks = (tasks || []).filter(function (t) { return t && t.name && t.owner; });
+    curTasks = tasks; curDue = due;
+    if (locked) taskEdit = false;
     box.textContent = '';
     box.classList.remove('t-top');
     box.style.display = tasks.length ? '' : 'none';
@@ -1448,8 +1500,56 @@
       seg.appendChild(b);
     });
     head.appendChild(seg);
+    if (!locked) {
+      var eb = mk('button', 't-editbtn', taskEdit ? 'Done editing' : 'Edit steps');
+      eb.type = 'button';
+      eb.setAttribute('aria-pressed', taskEdit ? 'true' : 'false');
+      eb.addEventListener('click', function () { taskEdit = !taskEdit; taskErr = ''; applyTasks(curTasks, curDue); });
+      head.appendChild(eb);
+    }
     box.appendChild(head);
-    box.appendChild(mk('p', 't-note', 'Each stage below shows the steps ' + client + ' and WebOuts each own, followed by the information we need from you for that stage. WebOuts marks steps done as work is finished.'));
+    box.appendChild(mk('p', 't-note', taskEdit
+      ? 'Click a circle to mark a step done or not done. Use Edit to reword a step, move it or remove it, and Add a step for anything that is missing. Changes save right away for everyone with this link.'
+      : 'Each stage below shows the steps ' + client + ' and WebOuts each own, followed by the information we need from you for that stage. Use Edit steps to add, change or tick off a step.'));
+    if (taskErr) box.appendChild(mk('div', 't-err', taskErr));
+    var SHARED = client + ' + WebOuts';
+    // One inline editor serves both a new step (t == null) and an existing one.
+    function editor(t, sideKey, g) {
+      var f = mk('div', 't-editor');
+      var inp = mk('input', '');
+      inp.type = 'text'; inp.maxLength = 200; inp.placeholder = 'Describe the step';
+      inp.value = t ? t.name : '';
+      inp.setAttribute('aria-label', 'Step description');
+      f.appendChild(inp);
+      var line = mk('div', 't-editline');
+      var own = mk('select', '');
+      own.setAttribute('aria-label', 'Who owns this step');
+      [[client, client], ['WebOuts', 'WebOuts'], [SHARED, 'Shared']].forEach(function (o) { var op = mk('option', '', o[1]); op.value = o[0]; own.appendChild(op); });
+      own.value = t ? (owners(t).length > 1 ? SHARED : isWo(owners(t)[0]) ? 'WebOuts' : client) : (sideKey === 'wo' ? 'WebOuts' : client);
+      var st = mk('select', '');
+      st.setAttribute('aria-label', 'Stage');
+      groups.forEach(function (name) { var op = mk('option', '', name || 'Next steps'); op.value = name; st.appendChild(op); });
+      st.value = g;
+      line.appendChild(own); line.appendChild(st);
+      function save() {
+        var name = inp.value.replace(/\s+/g, ' ').trim();
+        if (!name) { inp.focus(); return; }
+        if (t) taskCall({ op: 'update', id: t.id, name: name, owner: own.value, group: st.value }, function () { t.name = name; t.owner = own.value; t.group = st.value; });
+        else taskCall({ op: 'add', name: name, owner: own.value, group: st.value }, function (res) { curTasks.push({ id: String(res.id || ''), name: name, owner: own.value, group: st.value, done: false }); });
+      }
+      var sv = mk('button', 't-save', t ? 'Save' : 'Add step'); sv.type = 'button'; sv.addEventListener('click', save);
+      var cn = mk('button', '', 'Cancel'); cn.type = 'button'; cn.addEventListener('click', function () { applyTasks(curTasks, curDue); });
+      line.appendChild(sv); line.appendChild(cn);
+      if (t) {
+        var rm = mk('button', 't-remove', 'Remove step'); rm.type = 'button';
+        rm.addEventListener('click', function () { taskCall({ op: 'remove', id: t.id }, function () { curTasks = curTasks.filter(function (x) { return x !== t; }); }); });
+        line.appendChild(rm);
+      }
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); save(); } });
+      f.appendChild(line);
+      setTimeout(function () { inp.focus(); }, 0);
+      return f;
+    }
     var cols = mk('div', 't-cols');
     SIDES.forEach(function (sd) {
       var n = tally(tasks, sd.key);
@@ -1491,14 +1591,32 @@
         if (!mine.length) cell.appendChild(mk('div', 't-empty', 'Nothing for ' + sd.name + ' in this stage.'));
         mine.forEach(function (t) {
           var row = mk('div', 't-row' + (t.done ? ' t-done' : ''));
-          var tick = mk('span', 't-box', '\u2713');
-          tick.setAttribute('role', 'img');
-          tick.setAttribute('aria-label', t.done ? 'Done' : 'Not done yet');
+          var tick = mk(taskEdit ? 'button' : 'span', 't-box', '\u2713');
+          if (taskEdit) {
+            tick.type = 'button';
+            tick.setAttribute('aria-label', (t.done ? 'Mark not done: ' : 'Mark done: ') + t.name);
+            tick.title = t.done ? 'Mark not done' : 'Mark done';
+            tick.addEventListener('click', function () { taskCall({ op: 'update', id: t.id, done: !t.done }, function () { t.done = !t.done; }); });
+          } else {
+            tick.setAttribute('role', 'img');
+            tick.setAttribute('aria-label', t.done ? 'Done' : 'Not done yet');
+          }
           row.appendChild(tick);
           row.appendChild(mk('span', 't-name', t.name));
           if (owners(t).length > 1) row.appendChild(mk('span', 't-shared', 'Shared'));
+          if (taskEdit) {
+            var ed = mk('button', 't-edit', 'Edit'); ed.type = 'button';
+            ed.setAttribute('aria-label', 'Edit step: ' + t.name);
+            ed.addEventListener('click', function () { cell.replaceChild(editor(t, sd.key, g), row); });
+            row.appendChild(ed);
+          }
           cell.appendChild(row);
         });
+        if (taskEdit) {
+          var add = mk('button', 't-add', '+ Add a step for ' + sd.name); add.type = 'button';
+          add.addEventListener('click', function () { cell.replaceChild(editor(null, sd.key, g), add); });
+          cell.appendChild(add);
+        }
         grid.appendChild(cell);
       });
       stage.appendChild(grid);
@@ -1869,12 +1987,12 @@
     applyDone(data._done);
     applyDue(res && res.due);
     reorderByDue(res && res.due);
-    applyTasks(res && res.tasks, res && res.due);
     updateProgress();
     updateSubmit();
     // Read the real Monday Stage, not the copy in the blob. The blob only ever held
     // 'Submitted for Review', so a staff lock never actually reached the client.
     lockIfNeeded(res.stage || data._stage);
+    applyTasks(res && res.tasks, res && res.due); // after the lock, so a locked form shows no edit controls
     var has = Object.keys(data).length > 0;
     loaded = true;
     if (locked) setSave('idle', 'Locked');
