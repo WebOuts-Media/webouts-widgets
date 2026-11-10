@@ -607,6 +607,28 @@
   #wo-onb .sec .due.past,#wo-onb .sec .due.soon{color:#b3411f;background:#FDEFE9;border-color:#f3c9bb}
   #wo-onb .sec .due.warn{color:#8a5a00;background:#FFF6E3;border-color:#f2dca6}
   #wo-onb .sec .due.none{color:#9aa3b0;background:transparent;border:1px dashed #dbe1e9;font-weight:500}
+  /* project checklist: read-only, filled from the Monday record */
+  #wo-onb .tasks{border:1px solid #d6e3ff;border-radius:12px;padding:20px 22px;margin:0 0 22px;background:#f7f9ff}
+  #wo-onb .tasks .t-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;margin:0 0 4px}
+  #wo-onb .tasks .t-title{color:#07378C;font-size:17px;font-weight:700;margin:0 auto 0 0}
+  #wo-onb .tasks .t-note{color:#5b6472;font-size:13px;margin:0 0 6px}
+  #wo-onb .tasks .t-sum{font-size:11px;font-weight:700;letter-spacing:.3px;border-radius:20px;padding:3px 9px;white-space:nowrap}
+  #wo-onb .tasks .t-group{color:#07378C;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin:16px 0 4px}
+  #wo-onb .tasks .t-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-top:1px solid #e3eaf8;font-size:14px}
+  #wo-onb .tasks .t-group + .t-row{border-top:0}
+  #wo-onb .tasks .t-box{flex:0 0 auto;width:18px;height:18px;margin-top:1px;border:2px solid #cdd4df;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;color:transparent;font-size:11px;font-weight:800;line-height:1}
+  #wo-onb .tasks .t-row.t-done .t-box{background:#2F8F5C;border-color:#2F8F5C;color:#fff}
+  #wo-onb .tasks .t-name{flex:1 1 auto;min-width:0}
+  #wo-onb .tasks .t-row.t-done .t-name{color:#7b8494}
+  #wo-onb .tasks .t-own{flex:0 0 auto;display:inline-flex;gap:5px}
+  #wo-onb .tasks .t-pill{font-size:11px;font-weight:700;letter-spacing:.2px;border-radius:20px;padding:2px 8px;white-space:nowrap}
+  #wo-onb .tasks .wo{color:#b3411f;background:#FDEFE9;border:1px solid #f3c9bb}
+  #wo-onb .tasks .cl{color:#07378C;background:#eef2fb;border:1px solid #d6e3ff}
+  @media (max-width:520px){
+    #wo-onb .tasks{padding:16px 14px}
+    #wo-onb .tasks .t-row{display:grid;grid-template-columns:18px 1fr;gap:5px 10px}
+    #wo-onb .tasks .t-own{grid-column:2}
+  }
   #wo-onb .sec .chev{width:9px;height:9px;border-right:2px solid #9aa4b4;border-bottom:2px solid #9aa4b4;transform:rotate(-45deg);transition:transform .2s ease;flex:0 0 auto;margin-top:-3px}
   #wo-onb .sec.open .chev{transform:rotate(45deg)}
   #wo-onb .sec:not(.open) .intro,#wo-onb .sec:not(.open) .secbody{display:none}
@@ -788,6 +810,8 @@
     <h1 id="wo-welcome">Welcome! Let’s set up your profile videos</h1>
     <p class="sub" id="wo-welcomesub">This is how we get ready to film your providers. Most sections take a couple of minutes, and a few, like your provider list, you may want to gather first. You don’t need every answer today. This works best as a team effort: copy your private link above and pass it around so the right person fills in each section. Everything saves as you go, so anyone can stop and pick up later.</p>
 
+    <div id="wo-tasks" class="tasks" style="display:none"></div>
+
     <div id="wo-form">
       <div class="sec" data-sec="org">
         <h2><span class="num">1</span> Your organization</h2>
@@ -965,6 +989,7 @@
     var chrome = ['wo-form', 'wo-welcome', 'wo-welcomesub'];
     chrome.forEach(function (id) { document.getElementById(id).style.display = 'none'; });
     root.querySelector('.bar').style.display = 'none';
+    document.getElementById('wo-tasks').style.display = 'none';
     clearTimeout(loadTimer);
     loadTimer = setTimeout(function () { document.getElementById('wo-loading').style.display = ''; }, 180);
   }
@@ -1316,6 +1341,49 @@
       o.sec.classList.toggle('open', idx === 0);
       var h = o.sec.querySelector('h2');
       if (h) h.setAttribute('aria-expanded', idx === 0 ? 'true' : 'false');
+    });
+  }
+  // ---- project checklist (read-only) ----
+  // WebOuts keeps this list as subitems on the Monday record and marks them done there.
+  // The form only displays it, so the client sees both sides' progress and nobody holding
+  // the link can tick anything. A record with no tasks shows no panel at all.
+  function applyTasks(tasks) {
+    var box = document.getElementById('wo-tasks');
+    tasks = (tasks || []).filter(function (t) { return t && t.name && t.owner; });
+    box.textContent = '';
+    box.style.display = tasks.length ? '' : 'none';
+    if (!tasks.length) return;
+    function mk(tag, cls, text) { var e = document.createElement(tag); e.className = cls; if (text != null) e.textContent = text; return e; }
+    function owners(t) { return String(t.owner).split(/\s*[+\/&,]\s*/).filter(Boolean); }
+    function tone(o) { return /webouts/i.test(o) ? ' wo' : ' cl'; }
+    // A shared task counts for each side that owns it.
+    var tally = {}, names = [];
+    tasks.forEach(function (t) {
+      owners(t).forEach(function (o) {
+        if (!tally[o]) { tally[o] = { done: 0, all: 0 }; names.push(o); }
+        tally[o].all++; if (t.done) tally[o].done++;
+      });
+    });
+    names.sort(function (a, b) { return (/webouts/i.test(b) ? 1 : 0) - (/webouts/i.test(a) ? 1 : 0); });
+    var head = mk('div', 't-head');
+    head.appendChild(mk('h2', 't-title', 'Project checklist'));
+    names.forEach(function (o) { head.appendChild(mk('span', 't-sum' + tone(o), o + ' ' + tally[o].done + ' of ' + tally[o].all + ' done')); });
+    box.appendChild(head);
+    box.appendChild(mk('p', 't-note', 'Every step between today and your first filming day, and who owns it. WebOuts updates this list as work is finished.'));
+    var group = null;
+    tasks.forEach(function (t) {
+      var g = String(t.group || '');
+      if (g !== group) { group = g; if (g) box.appendChild(mk('div', 't-group', g)); }
+      var row = mk('div', 't-row' + (t.done ? ' t-done' : ''));
+      var tick = mk('span', 't-box', '\u2713');
+      tick.setAttribute('role', 'img');
+      tick.setAttribute('aria-label', t.done ? 'Done' : 'Not done yet');
+      row.appendChild(tick);
+      row.appendChild(mk('span', 't-name', t.name));
+      var own = mk('span', 't-own');
+      owners(t).forEach(function (o) { own.appendChild(mk('span', 't-pill' + tone(o), o)); });
+      row.appendChild(own);
+      box.appendChild(row);
     });
   }
   function applyDone(str) {
@@ -1674,6 +1742,7 @@
     applyDone(data._done);
     applyDue(res && res.due);
     reorderByDue(res && res.due);
+    applyTasks(res && res.tasks);
     updateProgress();
     updateSubmit();
     // Read the real Monday Stage, not the copy in the blob. The blob only ever held
