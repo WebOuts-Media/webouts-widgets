@@ -6,7 +6,6 @@
 (function () {
   var API = "https://webouts.app.n8n.cloud/webhook/onboarding-api";
   var UPLOAD = "https://webouts.app.n8n.cloud/webhook/onboarding-upload";
-  var TASKS = "https://webouts.app.n8n.cloud/webhook/onboarding-tasks";
   var MAX = 10 * 1024 * 1024; // 10 MB per file
 
   // ---- table definitions (rendered + wired generically) ----
@@ -608,91 +607,6 @@
   #wo-onb .sec .due.past,#wo-onb .sec .due.soon{color:#b3411f;background:#FDEFE9;border-color:#f3c9bb}
   #wo-onb .sec .due.warn{color:#8a5a00;background:#FFF6E3;border-color:#f2dca6}
   #wo-onb .sec .due.none{color:#9aa3b0;background:transparent;border:1px dashed #dbe1e9;font-weight:500}
-  /* project checklist: read-only, filled from the Monday record. Client steps on the
-     left, WebOuts steps on the right, and either side can be hidden. */
-  #wo-onb .tasks{border:1px solid #e6e9ef;border-radius:12px;padding:20px 22px;margin:0 0 22px;background:#fff}
-  #wo-onb .tasks .t-head{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 4px}
-  #wo-onb .tasks .t-title{color:#07378C;font-size:19px;font-weight:700;margin:0 auto 0 0}
-  #wo-onb .tasks .t-note{color:#5b6472;font-size:13px;margin:0 0 14px}
-  #wo-onb .tasks .t-seg{display:inline-flex;align-items:center;gap:2px;border:1px solid #d6e3ff;border-radius:22px;padding:3px;background:#f2f6ff}
-  #wo-onb .tasks .t-seglabel{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#7b8494;padding:0 6px 0 10px}
-  #wo-onb .tasks .t-seg button{-webkit-appearance:none;appearance:none;border:0;background:transparent;font-family:inherit;font-size:12px;font-weight:700;line-height:1.2;color:#5b6472;padding:6px 14px;margin:0;width:auto;border-radius:18px;cursor:pointer}
-  #wo-onb .tasks .t-seg button:hover{color:#07378C}
-  #wo-onb .tasks .t-seg button[aria-pressed="true"]{background:#07378C;color:#fff}
-  #wo-onb .tasks .t-cols,#wo-onb .tasks .t-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  #wo-onb .tasks .t-colhead{border-radius:10px;padding:12px 14px}
-  #wo-onb .tasks .t-colhead.s-cl{background:#eef2fb}
-  #wo-onb .tasks .t-colhead.s-wo{background:#FDEFE9}
-  #wo-onb .tasks .t-coltop{display:flex;align-items:baseline;gap:8px}
-  #wo-onb .tasks .t-colname{font-size:16px;font-weight:800;margin-right:auto}
-  #wo-onb .tasks .s-cl .t-colname,#wo-onb .tasks .s-cl .t-celllabel{color:#07378C}
-  #wo-onb .tasks .s-wo .t-colname,#wo-onb .tasks .s-wo .t-celllabel{color:#b3411f}
-  #wo-onb .tasks .t-count{font-size:12px;font-weight:600;color:#5b6472;white-space:nowrap}
-  #wo-onb .tasks .t-bar{height:6px;border-radius:4px;background:#fff;margin-top:9px;overflow:hidden}
-  #wo-onb .tasks .t-bar span{display:block;height:100%;border-radius:4px}
-  #wo-onb .tasks .s-cl .t-bar span{background:#07378C}
-  #wo-onb .tasks .s-wo .t-bar span{background:#E26337}
-  #wo-onb .tasks .t-group{display:flex;align-items:center;gap:10px;color:#1f2430;font-size:13px;font-weight:700;margin:20px 0 8px}
-  #wo-onb .tasks .t-group .t-step{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:#07378C;color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center}
-  #wo-onb .tasks .t-cell{border:1px solid #e6e9ef;border-radius:10px;padding:4px 14px}
-  #wo-onb .tasks .t-cell.s-cl{border-left:3px solid #07378C}
-  #wo-onb .tasks .t-cell.s-wo{border-left:3px solid #E26337}
-  #wo-onb .tasks .t-celllabel{display:none;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:8px 0 2px}
-  #wo-onb .tasks .t-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;font-size:14px}
-  #wo-onb .tasks .t-row + .t-row{border-top:1px solid #eef1f5}
-  #wo-onb .tasks .t-box{flex:0 0 auto;width:18px;height:18px;margin-top:1px;border:2px solid #cdd4df;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;color:transparent;font-size:11px;font-weight:800;line-height:1}
-  #wo-onb .tasks .t-row.t-done .t-box{background:#2F8F5C;border-color:#2F8F5C;color:#fff}
-  #wo-onb .tasks .t-name{flex:1 1 auto;min-width:0}
-  #wo-onb .tasks .t-row.t-done .t-name{color:#7b8494}
-  #wo-onb .tasks .t-shared{flex:0 0 auto;font-size:10px;font-weight:700;letter-spacing:.2px;color:#5b6472;background:#f1f3f6;border-radius:20px;padding:2px 8px;margin-top:1px;white-space:nowrap}
-  #wo-onb .tasks .t-empty{color:#9aa3b0;font-size:13px;padding:8px 0}
-  #wo-onb .tasks.only-cl .s-wo,#wo-onb .tasks.only-wo .s-cl{display:none}
-  #wo-onb .tasks.only-cl .t-cols,#wo-onb .tasks.only-cl .t-grid,#wo-onb .tasks.only-wo .t-cols,#wo-onb .tasks.only-wo .t-grid{grid-template-columns:1fr}
-  /* staged page: the checklist header sits open on the page and each stage is one card
-     holding both sides' steps and the form sections that belong to it */
-  #wo-onb #wo-tasks.t-top{border:0;padding:0;background:transparent;margin:0 0 16px}
-  #wo-onb .tasks.stage{background:#f7f9ff;border-color:#dfe7f7;margin:0 0 18px}
-  #wo-onb .tasks.stage .t-group{margin:0 0 14px;font-size:18px;color:#07378C}
-  #wo-onb .tasks.stage .t-group .t-step{width:28px;height:28px;font-size:14px}
-  #wo-onb .tasks .t-gcount{margin-left:auto;font-size:12px;font-weight:600;color:#7b8494;text-align:right}
-  #wo-onb .tasks.stage .t-cell{background:#fff}
-  #wo-onb .tasks .t-need{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#7b8494;margin:20px 0 8px}
-  #wo-onb .tasks.stage .sec{margin:0 0 10px}
-  #wo-onb .tasks.stage .sec:last-child{margin-bottom:0}
-  #wo-onb #wo-form.staged .sec h2 .num{display:none}
-  /* editing the steps on the page */
-  #wo-onb .tasks .t-editbtn{-webkit-appearance:none;appearance:none;border:1px solid #cfdcf7;background:#fff;color:#07378C;font-family:inherit;font-size:12px;font-weight:700;line-height:1.2;padding:9px 16px;border-radius:22px;cursor:pointer;width:auto;margin:0}
-  #wo-onb .tasks .t-editbtn:hover{border-color:#07378C}
-  #wo-onb .tasks .t-editbtn[aria-pressed="true"]{background:#2F8F5C;border-color:#2F8F5C;color:#fff}
-  #wo-onb .tasks .t-err{color:#b3411f;background:#FDEFE9;border:1px solid #f3c9bb;border-radius:8px;padding:8px 12px;font-size:13px;margin:0 0 12px}
-  #wo-onb .tasks button.t-box{-webkit-appearance:none;appearance:none;padding:0;font-family:inherit;cursor:pointer;box-sizing:border-box;min-width:0}
-  #wo-onb .tasks button.t-box:hover{border-color:#2F8F5C;color:#9fd3b6}
-  #wo-onb .tasks .t-row.t-done button.t-box:hover{color:#fff;filter:brightness(1.1)}
-  #wo-onb .tasks .t-edit{-webkit-appearance:none;appearance:none;flex:0 0 auto;border:0;background:transparent;color:#07378C;font-family:inherit;font-size:12px;font-weight:600;text-decoration:underline;cursor:pointer;padding:0 2px;margin:2px 0 0;width:auto}
-  #wo-onb .tasks .t-add{-webkit-appearance:none;appearance:none;display:block;width:100%;box-sizing:border-box;border:1px dashed #cdd4df;background:transparent;color:#5b6472;font-family:inherit;font-size:13px;font-weight:600;border-radius:8px;padding:8px 10px;margin:6px 0 10px;cursor:pointer;text-align:left}
-  #wo-onb .tasks .t-add:hover{border-color:#07378C;color:#07378C}
-  #wo-onb .tasks .t-editor{padding:10px 0}
-  #wo-onb .tasks .t-row + .t-editor,#wo-onb .tasks .t-editor + .t-row{border-top:1px solid #eef1f5}
-  #wo-onb .tasks .t-editor input[type=text]{display:block;width:100%;box-sizing:border-box;font-family:inherit;font-size:14px;padding:9px 10px;border:1px solid #cdd4df;border-radius:8px;margin:0 0 8px;background:#fff}
-  #wo-onb .tasks .t-editline{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-  #wo-onb .tasks .t-editline select{font-family:inherit;font-size:12px;padding:7px 8px;border:1px solid #cdd4df;border-radius:8px;background:#fff;color:#1f2430;width:auto;max-width:100%;margin:0}
-  #wo-onb .tasks .t-editline button{-webkit-appearance:none;appearance:none;font-family:inherit;font-size:12px;font-weight:700;line-height:1.2;border-radius:8px;padding:8px 12px;cursor:pointer;width:auto;margin:0;border:1px solid #cdd4df;background:#fff;color:#1f2430}
-  #wo-onb .tasks .t-editline .t-save{background:#07378C;border-color:#07378C;color:#fff}
-  #wo-onb .tasks .t-editline .t-remove{margin-left:auto;color:#b3411f;border-color:#f3c9bb}
-  #wo-onb #wo-form.t-busy .tasks{opacity:.55;pointer-events:none}
-  @media (max-width:640px){
-    #wo-onb .tasks{padding:16px 14px}
-    #wo-onb .tasks.stage{padding:14px 10px}
-    #wo-onb .tasks.stage .t-group{flex-wrap:wrap;font-size:16px}
-    #wo-onb .tasks .t-gcount{flex-basis:100%;margin-left:38px;text-align:left}
-    #wo-onb .tasks .t-seglabel{display:none}
-    #wo-onb .tasks .t-cols{gap:8px}
-    #wo-onb .tasks .t-colhead{padding:10px}
-    #wo-onb .tasks .t-coltop{flex-direction:column;gap:0}
-    #wo-onb .tasks .t-grid{grid-template-columns:1fr;gap:8px}
-    #wo-onb .tasks .t-celllabel{display:block}
-    #wo-onb .tasks.only-cl .t-celllabel,#wo-onb .tasks.only-wo .t-celllabel{display:none}
-  }
   #wo-onb .sec .chev{width:9px;height:9px;border-right:2px solid #9aa4b4;border-bottom:2px solid #9aa4b4;transform:rotate(-45deg);transition:transform .2s ease;flex:0 0 auto;margin-top:-3px}
   #wo-onb .sec.open .chev{transform:rotate(45deg)}
   #wo-onb .sec:not(.open) .intro,#wo-onb .sec:not(.open) .secbody{display:none}
@@ -873,8 +787,6 @@
 
     <h1 id="wo-welcome">Welcome! Let’s set up your profile videos</h1>
     <p class="sub" id="wo-welcomesub">This is how we get ready to film your providers. Most sections take a couple of minutes, and a few, like your provider list, you may want to gather first. You don’t need every answer today. This works best as a team effort: copy your private link above and pass it around so the right person fills in each section. Everything saves as you go, so anyone can stop and pick up later.</p>
-
-    <div id="wo-tasks" class="tasks" style="display:none"></div>
 
     <div id="wo-form">
       <div class="sec" data-sec="org">
@@ -1062,7 +974,6 @@
     var chrome = ['wo-form', 'wo-welcome', 'wo-welcomesub'];
     chrome.forEach(function (id) { document.getElementById(id).style.display = 'none'; });
     root.querySelector('.bar').style.display = 'none';
-    document.getElementById('wo-tasks').style.display = 'none';
     clearTimeout(loadTimer);
     loadTimer = setTimeout(function () { document.getElementById('wo-loading').style.display = ''; }, 180);
   }
@@ -1415,221 +1326,6 @@
       var h = o.sec.querySelector('h2');
       if (h) h.setAttribute('aria-expanded', idx === 0 ? 'true' : 'false');
     });
-  }
-  // ---- project checklist (read-only) ----
-  // WebOuts keeps this list as subitems on the Monday record and marks them done there.
-  // The form only displays it, so the client sees both sides' progress and nobody holding
-  // the link can tick anything. A record with no tasks shows no panel at all.
-  // Which stage of the checklist each form section belongs to, by stage position. With
-  // fewer stages than this expects, the later sections land in the last one.
-  var SEC_STAGE = { org: 0, people: 0, billing: 0, look: 1, brand: 1, resources: 1, providers: 2, filming: 2, samples: 3, misc: 3 };
-  // Anyone holding the form link may add, edit, tick off or remove steps (Evan, 2026-11-10:
-  // other departments need to add their own). The server only lets a link touch its own steps.
-  var curTasks = [], curDue = null, taskEdit = false, taskBusy = false, taskErr = '';
-  function taskCall(body, onOk) {
-    if (taskBusy || preview || locked || !token) return;
-    taskBusy = true; taskErr = '';
-    document.getElementById('wo-form').classList.add('t-busy');
-    body.token = token;
-    function finish(err) {
-      taskBusy = false; taskErr = err || '';
-      document.getElementById('wo-form').classList.remove('t-busy');
-      applyTasks(curTasks, curDue);
-    }
-    postJSON(TASKS, body)
-      .then(function (res) {
-        if (res && res.ok === true) { onOk(res); finish(''); }
-        else finish((res && res.error) || 'That change was not saved. Please try again.');
-      })
-      .catch(function () { finish('That change was not saved. Check your connection and try again.'); });
-  }
-  function applyTasks(tasks, due) {
-    var box = document.getElementById('wo-tasks');
-    var form = document.getElementById('wo-form');
-    var submit = document.getElementById('wo-submit');
-    // A reload starts from the plain form: sections back in authored order, then by deadline.
-    var old = Array.prototype.slice.call(form.querySelectorAll('.stage'));
-    if (old.length) {
-      secs.forEach(function (sec) { form.insertBefore(sec, submit); });
-      old.forEach(function (el) { form.removeChild(el); });
-      reorderByDue(due);
-    }
-    form.classList.remove('staged');
-    tasks = (tasks || []).filter(function (t) { return t && t.name && t.owner; });
-    curTasks = tasks; curDue = due;
-    if (locked) taskEdit = false;
-    box.textContent = '';
-    box.classList.remove('t-top');
-    box.style.display = tasks.length ? '' : 'none';
-    if (!tasks.length) return;
-    function mk(tag, cls, text) { var e = document.createElement(tag); e.className = cls; if (text != null) e.textContent = text; return e; }
-    function owners(t) { return String(t.owner).split(/\s*[+\/&,]\s*/).filter(Boolean); }
-    function isWo(o) { return /webouts/i.test(o); }
-    // Two sides: the client (named by whatever the owner column calls them) and WebOuts.
-    // A shared task sits on both sides and counts for both.
-    var client = '';
-    tasks.forEach(function (t) { owners(t).forEach(function (o) { if (!client && !isWo(o)) client = o; }); });
-    client = client || 'Your team';
-    var SIDES = [{ key: 'cl', name: client }, { key: 'wo', name: 'WebOuts' }];
-    function onSide(t, key) { return owners(t).some(function (o) { return isWo(o) === (key === 'wo'); }); }
-    function tally(list, key) {
-      var mine = list.filter(function (t) { return onSide(t, key); });
-      return { all: mine.length, done: mine.filter(function (t) { return t.done; }).length };
-    }
-
-    // Which side(s) to show is a per-browser preference, never saved to the record.
-    var btns = [], panels = [box];
-    function setView(v, remember) {
-      panels.forEach(function (el) { el.classList.toggle('only-cl', v === 'cl'); el.classList.toggle('only-wo', v === 'wo'); });
-      btns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === v ? 'true' : 'false'); });
-      if (remember) { try { localStorage.setItem('woOnbTaskView', v); } catch (e) {} }
-    }
-    box.classList.add('t-top');
-    var head = mk('div', 't-head');
-    head.appendChild(mk('h2', 't-title', 'Your project plan'));
-    var seg = mk('div', 't-seg');
-    seg.setAttribute('role', 'group');
-    seg.setAttribute('aria-label', 'Choose whose steps to show');
-    seg.appendChild(mk('span', 't-seglabel', 'Show steps for'));
-    [['both', 'Both'], ['cl', client], ['wo', 'WebOuts']].forEach(function (o) {
-      var b = mk('button', '', o[1]);
-      b.type = 'button';
-      b.setAttribute('data-v', o[0]);
-      b.addEventListener('click', function () { setView(o[0], true); });
-      btns.push(b);
-      seg.appendChild(b);
-    });
-    head.appendChild(seg);
-    if (!locked) {
-      var eb = mk('button', 't-editbtn', taskEdit ? 'Done editing' : 'Edit steps');
-      eb.type = 'button';
-      eb.setAttribute('aria-pressed', taskEdit ? 'true' : 'false');
-      eb.addEventListener('click', function () { taskEdit = !taskEdit; taskErr = ''; applyTasks(curTasks, curDue); });
-      head.appendChild(eb);
-    }
-    box.appendChild(head);
-    box.appendChild(mk('p', 't-note', taskEdit
-      ? 'Click a circle to mark a step done or not done. Use Edit to reword a step, move it or remove it, and Add a step for anything that is missing. Changes save right away for everyone with this link.'
-      : 'Each stage below shows the steps ' + client + ' and WebOuts each own, followed by the information we need from you for that stage. Use Edit steps to add, change or tick off a step.'));
-    if (taskErr) box.appendChild(mk('div', 't-err', taskErr));
-    var SHARED = client + ' + WebOuts';
-    // One inline editor serves both a new step (t == null) and an existing one.
-    function editor(t, sideKey, g) {
-      var f = mk('div', 't-editor');
-      var inp = mk('input', '');
-      inp.type = 'text'; inp.maxLength = 200; inp.placeholder = 'Describe the step';
-      inp.value = t ? t.name : '';
-      inp.setAttribute('aria-label', 'Step description');
-      f.appendChild(inp);
-      var line = mk('div', 't-editline');
-      var own = mk('select', '');
-      own.setAttribute('aria-label', 'Who owns this step');
-      [[client, client], ['WebOuts', 'WebOuts'], [SHARED, 'Shared']].forEach(function (o) { var op = mk('option', '', o[1]); op.value = o[0]; own.appendChild(op); });
-      own.value = t ? (owners(t).length > 1 ? SHARED : isWo(owners(t)[0]) ? 'WebOuts' : client) : (sideKey === 'wo' ? 'WebOuts' : client);
-      var st = mk('select', '');
-      st.setAttribute('aria-label', 'Stage');
-      groups.forEach(function (name) { var op = mk('option', '', name || 'Next steps'); op.value = name; st.appendChild(op); });
-      st.value = g;
-      line.appendChild(own); line.appendChild(st);
-      function save() {
-        var name = inp.value.replace(/\s+/g, ' ').trim();
-        if (!name) { inp.focus(); return; }
-        if (t) taskCall({ op: 'update', id: t.id, name: name, owner: own.value, group: st.value }, function () { t.name = name; t.owner = own.value; t.group = st.value; });
-        else taskCall({ op: 'add', name: name, owner: own.value, group: st.value }, function (res) { curTasks.push({ id: String(res.id || ''), name: name, owner: own.value, group: st.value, done: false }); });
-      }
-      var sv = mk('button', 't-save', t ? 'Save' : 'Add step'); sv.type = 'button'; sv.addEventListener('click', save);
-      var cn = mk('button', '', 'Cancel'); cn.type = 'button'; cn.addEventListener('click', function () { applyTasks(curTasks, curDue); });
-      line.appendChild(sv); line.appendChild(cn);
-      if (t) {
-        var rm = mk('button', 't-remove', 'Remove step'); rm.type = 'button';
-        rm.addEventListener('click', function () { taskCall({ op: 'remove', id: t.id }, function () { curTasks = curTasks.filter(function (x) { return x !== t; }); }); });
-        line.appendChild(rm);
-      }
-      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); save(); } });
-      f.appendChild(line);
-      setTimeout(function () { inp.focus(); }, 0);
-      return f;
-    }
-    var cols = mk('div', 't-cols');
-    SIDES.forEach(function (sd) {
-      var n = tally(tasks, sd.key);
-      var h = mk('div', 't-colhead s-' + sd.key);
-      var top = mk('div', 't-coltop');
-      top.appendChild(mk('span', 't-colname', sd.name));
-      top.appendChild(mk('span', 't-count', n.done + ' of ' + n.all + ' steps done'));
-      h.appendChild(top);
-      var bar = mk('div', 't-bar'), fill = mk('span', '');
-      fill.style.width = (n.all ? Math.round(n.done / n.all * 100) : 0) + '%';
-      bar.appendChild(fill);
-      h.appendChild(bar);
-      cols.appendChild(h);
-    });
-    box.appendChild(cols);
-
-    // One card per stage: both sides' steps, then the form sections for that stage in the
-    // order the form already has them (soonest deadline first).
-    var groups = [];
-    tasks.forEach(function (t) { var g = String(t.group || ''); if (groups.indexOf(g) < 0) groups.push(g); });
-    var ordered = Array.prototype.slice.call(form.querySelectorAll('.sec'));
-    function stageOf(sec) {
-      var i = SEC_STAGE[sec.getAttribute('data-sec')];
-      return Math.min(i == null ? groups.length - 1 : i, groups.length - 1);
-    }
-    groups.forEach(function (g, gi) {
-      var inStage = tasks.filter(function (t) { return String(t.group || '') === g; });
-      var stage = mk('div', 'tasks stage');
-      var gh = mk('div', 't-group');
-      gh.appendChild(mk('span', 't-step', String(gi + 1)));
-      gh.appendChild(mk('span', '', g || 'Next steps'));
-      gh.appendChild(mk('span', 't-gcount', SIDES.map(function (sd) { var n = tally(inStage, sd.key); return sd.name + ' ' + n.done + ' of ' + n.all; }).join('  ·  ')));
-      stage.appendChild(gh);
-      var grid = mk('div', 't-grid');
-      SIDES.forEach(function (sd) {
-        var cell = mk('div', 't-cell s-' + sd.key);
-        cell.appendChild(mk('div', 't-celllabel', sd.name));
-        var mine = inStage.filter(function (t) { return onSide(t, sd.key); });
-        if (!mine.length) cell.appendChild(mk('div', 't-empty', 'Nothing for ' + sd.name + ' in this stage.'));
-        mine.forEach(function (t) {
-          var row = mk('div', 't-row' + (t.done ? ' t-done' : ''));
-          var tick = mk(taskEdit ? 'button' : 'span', 't-box', '\u2713');
-          if (taskEdit) {
-            tick.type = 'button';
-            tick.setAttribute('aria-label', (t.done ? 'Mark not done: ' : 'Mark done: ') + t.name);
-            tick.title = t.done ? 'Mark not done' : 'Mark done';
-            tick.addEventListener('click', function () { taskCall({ op: 'update', id: t.id, done: !t.done }, function () { t.done = !t.done; }); });
-          } else {
-            tick.setAttribute('role', 'img');
-            tick.setAttribute('aria-label', t.done ? 'Done' : 'Not done yet');
-          }
-          row.appendChild(tick);
-          row.appendChild(mk('span', 't-name', t.name));
-          if (owners(t).length > 1) row.appendChild(mk('span', 't-shared', 'Shared'));
-          if (taskEdit) {
-            var ed = mk('button', 't-edit', 'Edit'); ed.type = 'button';
-            ed.setAttribute('aria-label', 'Edit step: ' + t.name);
-            ed.addEventListener('click', function () { cell.replaceChild(editor(t, sd.key, g), row); });
-            row.appendChild(ed);
-          }
-          cell.appendChild(row);
-        });
-        if (taskEdit) {
-          var add = mk('button', 't-add', '+ Add a step for ' + sd.name); add.type = 'button';
-          add.addEventListener('click', function () { cell.replaceChild(editor(null, sd.key, g), add); });
-          cell.appendChild(add);
-        }
-        grid.appendChild(cell);
-      });
-      stage.appendChild(grid);
-      var mineSecs = ordered.filter(function (sec) { return stageOf(sec) === gi; });
-      if (mineSecs.length) stage.appendChild(mk('div', 't-need', 'Your information for this stage'));
-      mineSecs.forEach(function (sec) { stage.appendChild(sec); });
-      form.insertBefore(stage, submit);
-      panels.push(stage);
-    });
-    form.classList.add('staged');
-    var saved = 'both';
-    try { saved = localStorage.getItem('woOnbTaskView') || 'both'; } catch (e) {}
-    setView(saved === 'cl' || saved === 'wo' ? saved : 'both', false);
   }
   function applyDone(str) {
     doneSecs = {};
@@ -1992,7 +1688,6 @@
     // Read the real Monday Stage, not the copy in the blob. The blob only ever held
     // 'Submitted for Review', so a staff lock never actually reached the client.
     lockIfNeeded(res.stage || data._stage);
-    applyTasks(res && res.tasks, res && res.due); // after the lock, so a locked form shows no edit controls
     var has = Object.keys(data).length > 0;
     loaded = true;
     if (locked) setSave('idle', 'Locked');
