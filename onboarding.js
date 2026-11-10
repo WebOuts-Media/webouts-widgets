@@ -647,8 +647,23 @@
   #wo-onb .tasks .t-empty{color:#9aa3b0;font-size:13px;padding:8px 0}
   #wo-onb .tasks.only-cl .s-wo,#wo-onb .tasks.only-wo .s-cl{display:none}
   #wo-onb .tasks.only-cl .t-cols,#wo-onb .tasks.only-cl .t-grid,#wo-onb .tasks.only-wo .t-cols,#wo-onb .tasks.only-wo .t-grid{grid-template-columns:1fr}
+  /* staged page: the checklist header sits open on the page and each stage is one card
+     holding both sides' steps and the form sections that belong to it */
+  #wo-onb #wo-tasks.t-top{border:0;padding:0;background:transparent;margin:0 0 16px}
+  #wo-onb .tasks.stage{background:#f7f9ff;border-color:#dfe7f7;margin:0 0 18px}
+  #wo-onb .tasks.stage .t-group{margin:0 0 14px;font-size:18px;color:#07378C}
+  #wo-onb .tasks.stage .t-group .t-step{width:28px;height:28px;font-size:14px}
+  #wo-onb .tasks .t-gcount{margin-left:auto;font-size:12px;font-weight:600;color:#7b8494;text-align:right}
+  #wo-onb .tasks.stage .t-cell{background:#fff}
+  #wo-onb .tasks .t-need{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#7b8494;margin:20px 0 8px}
+  #wo-onb .tasks.stage .sec{margin:0 0 10px}
+  #wo-onb .tasks.stage .sec:last-child{margin-bottom:0}
+  #wo-onb #wo-form.staged .sec h2 .num{display:none}
   @media (max-width:640px){
     #wo-onb .tasks{padding:16px 14px}
+    #wo-onb .tasks.stage{padding:14px 10px}
+    #wo-onb .tasks.stage .t-group{flex-wrap:wrap;font-size:16px}
+    #wo-onb .tasks .t-gcount{flex-basis:100%;margin-left:38px;text-align:left}
     #wo-onb .tasks .t-seglabel{display:none}
     #wo-onb .tasks .t-cols{gap:8px}
     #wo-onb .tasks .t-colhead{padding:10px}
@@ -1375,10 +1390,24 @@
   // WebOuts keeps this list as subitems on the Monday record and marks them done there.
   // The form only displays it, so the client sees both sides' progress and nobody holding
   // the link can tick anything. A record with no tasks shows no panel at all.
-  function applyTasks(tasks) {
+  // Which stage of the checklist each form section belongs to, by stage position. With
+  // fewer stages than this expects, the later sections land in the last one.
+  var SEC_STAGE = { org: 0, people: 0, billing: 0, look: 1, brand: 1, resources: 1, providers: 2, filming: 2, samples: 3, misc: 3 };
+  function applyTasks(tasks, due) {
     var box = document.getElementById('wo-tasks');
+    var form = document.getElementById('wo-form');
+    var submit = document.getElementById('wo-submit');
+    // A reload starts from the plain form: sections back in authored order, then by deadline.
+    var old = Array.prototype.slice.call(form.querySelectorAll('.stage'));
+    if (old.length) {
+      secs.forEach(function (sec) { form.insertBefore(sec, submit); });
+      old.forEach(function (el) { form.removeChild(el); });
+      reorderByDue(due);
+    }
+    form.classList.remove('staged');
     tasks = (tasks || []).filter(function (t) { return t && t.name && t.owner; });
     box.textContent = '';
+    box.classList.remove('t-top');
     box.style.display = tasks.length ? '' : 'none';
     if (!tasks.length) return;
     function mk(tag, cls, text) { var e = document.createElement(tag); e.className = cls; if (text != null) e.textContent = text; return e; }
@@ -1391,21 +1420,25 @@
     client = client || 'Your team';
     var SIDES = [{ key: 'cl', name: client }, { key: 'wo', name: 'WebOuts' }];
     function onSide(t, key) { return owners(t).some(function (o) { return isWo(o) === (key === 'wo'); }); }
+    function tally(list, key) {
+      var mine = list.filter(function (t) { return onSide(t, key); });
+      return { all: mine.length, done: mine.filter(function (t) { return t.done; }).length };
+    }
 
     // Which side(s) to show is a per-browser preference, never saved to the record.
-    var btns = [];
+    var btns = [], panels = [box];
     function setView(v, remember) {
-      box.classList.toggle('only-cl', v === 'cl');
-      box.classList.toggle('only-wo', v === 'wo');
+      panels.forEach(function (el) { el.classList.toggle('only-cl', v === 'cl'); el.classList.toggle('only-wo', v === 'wo'); });
       btns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === v ? 'true' : 'false'); });
       if (remember) { try { localStorage.setItem('woOnbTaskView', v); } catch (e) {} }
     }
+    box.classList.add('t-top');
     var head = mk('div', 't-head');
-    head.appendChild(mk('h2', 't-title', 'Project checklist'));
+    head.appendChild(mk('h2', 't-title', 'Your project plan'));
     var seg = mk('div', 't-seg');
     seg.setAttribute('role', 'group');
     seg.setAttribute('aria-label', 'Choose whose steps to show');
-    seg.appendChild(mk('span', 't-seglabel', 'Show'));
+    seg.appendChild(mk('span', 't-seglabel', 'Show steps for'));
     [['both', 'Both'], ['cl', client], ['wo', 'WebOuts']].forEach(function (o) {
       var b = mk('button', '', o[1]);
       b.type = 'button';
@@ -1416,39 +1449,45 @@
     });
     head.appendChild(seg);
     box.appendChild(head);
-    box.appendChild(mk('p', 't-note', 'Every step between today and your first filming day. ' + client + '’s steps are listed first, WebOuts’ steps beside them. WebOuts updates this list as work is finished.'));
-
+    box.appendChild(mk('p', 't-note', 'Each stage below shows the steps ' + client + ' and WebOuts each own, followed by the information we need from you for that stage. WebOuts marks steps done as work is finished.'));
     var cols = mk('div', 't-cols');
     SIDES.forEach(function (sd) {
-      var mine = tasks.filter(function (t) { return onSide(t, sd.key); });
-      var done = mine.filter(function (t) { return t.done; }).length;
+      var n = tally(tasks, sd.key);
       var h = mk('div', 't-colhead s-' + sd.key);
       var top = mk('div', 't-coltop');
       top.appendChild(mk('span', 't-colname', sd.name));
-      top.appendChild(mk('span', 't-count', done + ' of ' + mine.length + ' done'));
+      top.appendChild(mk('span', 't-count', n.done + ' of ' + n.all + ' steps done'));
       h.appendChild(top);
       var bar = mk('div', 't-bar'), fill = mk('span', '');
-      fill.style.width = (mine.length ? Math.round(done / mine.length * 100) : 0) + '%';
+      fill.style.width = (n.all ? Math.round(n.done / n.all * 100) : 0) + '%';
       bar.appendChild(fill);
       h.appendChild(bar);
       cols.appendChild(h);
     });
     box.appendChild(cols);
 
+    // One card per stage: both sides' steps, then the form sections for that stage in the
+    // order the form already has them (soonest deadline first).
     var groups = [];
     tasks.forEach(function (t) { var g = String(t.group || ''); if (groups.indexOf(g) < 0) groups.push(g); });
+    var ordered = Array.prototype.slice.call(form.querySelectorAll('.sec'));
+    function stageOf(sec) {
+      var i = SEC_STAGE[sec.getAttribute('data-sec')];
+      return Math.min(i == null ? groups.length - 1 : i, groups.length - 1);
+    }
     groups.forEach(function (g, gi) {
-      if (g) {
-        var gh = mk('div', 't-group');
-        gh.appendChild(mk('span', 't-step', String(gi + 1)));
-        gh.appendChild(mk('span', '', g));
-        box.appendChild(gh);
-      }
+      var inStage = tasks.filter(function (t) { return String(t.group || '') === g; });
+      var stage = mk('div', 'tasks stage');
+      var gh = mk('div', 't-group');
+      gh.appendChild(mk('span', 't-step', String(gi + 1)));
+      gh.appendChild(mk('span', '', g || 'Next steps'));
+      gh.appendChild(mk('span', 't-gcount', SIDES.map(function (sd) { var n = tally(inStage, sd.key); return sd.name + ' ' + n.done + ' of ' + n.all; }).join('  ·  ')));
+      stage.appendChild(gh);
       var grid = mk('div', 't-grid');
       SIDES.forEach(function (sd) {
         var cell = mk('div', 't-cell s-' + sd.key);
         cell.appendChild(mk('div', 't-celllabel', sd.name));
-        var mine = tasks.filter(function (t) { return String(t.group || '') === g && onSide(t, sd.key); });
+        var mine = inStage.filter(function (t) { return onSide(t, sd.key); });
         if (!mine.length) cell.appendChild(mk('div', 't-empty', 'Nothing for ' + sd.name + ' in this stage.'));
         mine.forEach(function (t) {
           var row = mk('div', 't-row' + (t.done ? ' t-done' : ''));
@@ -1462,8 +1501,14 @@
         });
         grid.appendChild(cell);
       });
-      box.appendChild(grid);
+      stage.appendChild(grid);
+      var mineSecs = ordered.filter(function (sec) { return stageOf(sec) === gi; });
+      if (mineSecs.length) stage.appendChild(mk('div', 't-need', 'Your information for this stage'));
+      mineSecs.forEach(function (sec) { stage.appendChild(sec); });
+      form.insertBefore(stage, submit);
+      panels.push(stage);
     });
+    form.classList.add('staged');
     var saved = 'both';
     try { saved = localStorage.getItem('woOnbTaskView') || 'both'; } catch (e) {}
     setView(saved === 'cl' || saved === 'wo' ? saved : 'both', false);
@@ -1824,7 +1869,7 @@
     applyDone(data._done);
     applyDue(res && res.due);
     reorderByDue(res && res.due);
-    applyTasks(res && res.tasks);
+    applyTasks(res && res.tasks, res && res.due);
     updateProgress();
     updateSubmit();
     // Read the real Monday Stage, not the copy in the blob. The blob only ever held
