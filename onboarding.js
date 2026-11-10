@@ -607,27 +607,55 @@
   #wo-onb .sec .due.past,#wo-onb .sec .due.soon{color:#b3411f;background:#FDEFE9;border-color:#f3c9bb}
   #wo-onb .sec .due.warn{color:#8a5a00;background:#FFF6E3;border-color:#f2dca6}
   #wo-onb .sec .due.none{color:#9aa3b0;background:transparent;border:1px dashed #dbe1e9;font-weight:500}
-  /* project checklist: read-only, filled from the Monday record */
-  #wo-onb .tasks{border:1px solid #d6e3ff;border-radius:12px;padding:20px 22px;margin:0 0 22px;background:#f7f9ff}
-  #wo-onb .tasks .t-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;margin:0 0 4px}
-  #wo-onb .tasks .t-title{color:#07378C;font-size:17px;font-weight:700;margin:0 auto 0 0}
-  #wo-onb .tasks .t-note{color:#5b6472;font-size:13px;margin:0 0 6px}
-  #wo-onb .tasks .t-sum{font-size:11px;font-weight:700;letter-spacing:.3px;border-radius:20px;padding:3px 9px;white-space:nowrap}
-  #wo-onb .tasks .t-group{color:#07378C;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin:16px 0 4px}
-  #wo-onb .tasks .t-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-top:1px solid #e3eaf8;font-size:14px}
-  #wo-onb .tasks .t-group + .t-row{border-top:0}
+  /* project checklist: read-only, filled from the Monday record. Client steps on the
+     left, WebOuts steps on the right, and either side can be hidden. */
+  #wo-onb .tasks{border:1px solid #e6e9ef;border-radius:12px;padding:20px 22px;margin:0 0 22px;background:#fff}
+  #wo-onb .tasks .t-head{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 4px}
+  #wo-onb .tasks .t-title{color:#07378C;font-size:19px;font-weight:700;margin:0 auto 0 0}
+  #wo-onb .tasks .t-note{color:#5b6472;font-size:13px;margin:0 0 14px}
+  #wo-onb .tasks .t-seg{display:inline-flex;align-items:center;gap:2px;border:1px solid #d6e3ff;border-radius:22px;padding:3px;background:#f2f6ff}
+  #wo-onb .tasks .t-seglabel{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#7b8494;padding:0 6px 0 10px}
+  #wo-onb .tasks .t-seg button{-webkit-appearance:none;appearance:none;border:0;background:transparent;font-family:inherit;font-size:12px;font-weight:700;line-height:1.2;color:#5b6472;padding:6px 14px;margin:0;width:auto;border-radius:18px;cursor:pointer}
+  #wo-onb .tasks .t-seg button:hover{color:#07378C}
+  #wo-onb .tasks .t-seg button[aria-pressed="true"]{background:#07378C;color:#fff}
+  #wo-onb .tasks .t-cols,#wo-onb .tasks .t-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  #wo-onb .tasks .t-colhead{border-radius:10px;padding:12px 14px}
+  #wo-onb .tasks .t-colhead.s-cl{background:#eef2fb}
+  #wo-onb .tasks .t-colhead.s-wo{background:#FDEFE9}
+  #wo-onb .tasks .t-coltop{display:flex;align-items:baseline;gap:8px}
+  #wo-onb .tasks .t-colname{font-size:16px;font-weight:800;margin-right:auto}
+  #wo-onb .tasks .s-cl .t-colname,#wo-onb .tasks .s-cl .t-celllabel{color:#07378C}
+  #wo-onb .tasks .s-wo .t-colname,#wo-onb .tasks .s-wo .t-celllabel{color:#b3411f}
+  #wo-onb .tasks .t-count{font-size:12px;font-weight:600;color:#5b6472;white-space:nowrap}
+  #wo-onb .tasks .t-bar{height:6px;border-radius:4px;background:#fff;margin-top:9px;overflow:hidden}
+  #wo-onb .tasks .t-bar span{display:block;height:100%;border-radius:4px}
+  #wo-onb .tasks .s-cl .t-bar span{background:#07378C}
+  #wo-onb .tasks .s-wo .t-bar span{background:#E26337}
+  #wo-onb .tasks .t-group{display:flex;align-items:center;gap:10px;color:#1f2430;font-size:13px;font-weight:700;margin:20px 0 8px}
+  #wo-onb .tasks .t-group .t-step{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:#07378C;color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center}
+  #wo-onb .tasks .t-cell{border:1px solid #e6e9ef;border-radius:10px;padding:4px 14px}
+  #wo-onb .tasks .t-cell.s-cl{border-left:3px solid #07378C}
+  #wo-onb .tasks .t-cell.s-wo{border-left:3px solid #E26337}
+  #wo-onb .tasks .t-celllabel{display:none;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:8px 0 2px}
+  #wo-onb .tasks .t-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;font-size:14px}
+  #wo-onb .tasks .t-row + .t-row{border-top:1px solid #eef1f5}
   #wo-onb .tasks .t-box{flex:0 0 auto;width:18px;height:18px;margin-top:1px;border:2px solid #cdd4df;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;color:transparent;font-size:11px;font-weight:800;line-height:1}
   #wo-onb .tasks .t-row.t-done .t-box{background:#2F8F5C;border-color:#2F8F5C;color:#fff}
   #wo-onb .tasks .t-name{flex:1 1 auto;min-width:0}
   #wo-onb .tasks .t-row.t-done .t-name{color:#7b8494}
-  #wo-onb .tasks .t-own{flex:0 0 auto;display:inline-flex;gap:5px}
-  #wo-onb .tasks .t-pill{font-size:11px;font-weight:700;letter-spacing:.2px;border-radius:20px;padding:2px 8px;white-space:nowrap}
-  #wo-onb .tasks .wo{color:#b3411f;background:#FDEFE9;border:1px solid #f3c9bb}
-  #wo-onb .tasks .cl{color:#07378C;background:#eef2fb;border:1px solid #d6e3ff}
-  @media (max-width:520px){
+  #wo-onb .tasks .t-shared{flex:0 0 auto;font-size:10px;font-weight:700;letter-spacing:.2px;color:#5b6472;background:#f1f3f6;border-radius:20px;padding:2px 8px;margin-top:1px;white-space:nowrap}
+  #wo-onb .tasks .t-empty{color:#9aa3b0;font-size:13px;padding:8px 0}
+  #wo-onb .tasks.only-cl .s-wo,#wo-onb .tasks.only-wo .s-cl{display:none}
+  #wo-onb .tasks.only-cl .t-cols,#wo-onb .tasks.only-cl .t-grid,#wo-onb .tasks.only-wo .t-cols,#wo-onb .tasks.only-wo .t-grid{grid-template-columns:1fr}
+  @media (max-width:640px){
     #wo-onb .tasks{padding:16px 14px}
-    #wo-onb .tasks .t-row{display:grid;grid-template-columns:18px 1fr;gap:5px 10px}
-    #wo-onb .tasks .t-own{grid-column:2}
+    #wo-onb .tasks .t-seglabel{display:none}
+    #wo-onb .tasks .t-cols{gap:8px}
+    #wo-onb .tasks .t-colhead{padding:10px}
+    #wo-onb .tasks .t-coltop{flex-direction:column;gap:0}
+    #wo-onb .tasks .t-grid{grid-template-columns:1fr;gap:8px}
+    #wo-onb .tasks .t-celllabel{display:block}
+    #wo-onb .tasks.only-cl .t-celllabel,#wo-onb .tasks.only-wo .t-celllabel{display:none}
   }
   #wo-onb .sec .chev{width:9px;height:9px;border-right:2px solid #9aa4b4;border-bottom:2px solid #9aa4b4;transform:rotate(-45deg);transition:transform .2s ease;flex:0 0 auto;margin-top:-3px}
   #wo-onb .sec.open .chev{transform:rotate(45deg)}
@@ -1355,36 +1383,90 @@
     if (!tasks.length) return;
     function mk(tag, cls, text) { var e = document.createElement(tag); e.className = cls; if (text != null) e.textContent = text; return e; }
     function owners(t) { return String(t.owner).split(/\s*[+\/&,]\s*/).filter(Boolean); }
-    function tone(o) { return /webouts/i.test(o) ? ' wo' : ' cl'; }
-    // A shared task counts for each side that owns it.
-    var tally = {}, names = [];
-    tasks.forEach(function (t) {
-      owners(t).forEach(function (o) {
-        if (!tally[o]) { tally[o] = { done: 0, all: 0 }; names.push(o); }
-        tally[o].all++; if (t.done) tally[o].done++;
-      });
-    });
-    names.sort(function (a, b) { return (/webouts/i.test(b) ? 1 : 0) - (/webouts/i.test(a) ? 1 : 0); });
+    function isWo(o) { return /webouts/i.test(o); }
+    // Two sides: the client (named by whatever the owner column calls them) and WebOuts.
+    // A shared task sits on both sides and counts for both.
+    var client = '';
+    tasks.forEach(function (t) { owners(t).forEach(function (o) { if (!client && !isWo(o)) client = o; }); });
+    client = client || 'Your team';
+    var SIDES = [{ key: 'cl', name: client }, { key: 'wo', name: 'WebOuts' }];
+    function onSide(t, key) { return owners(t).some(function (o) { return isWo(o) === (key === 'wo'); }); }
+
+    // Which side(s) to show is a per-browser preference, never saved to the record.
+    var btns = [];
+    function setView(v, remember) {
+      box.classList.toggle('only-cl', v === 'cl');
+      box.classList.toggle('only-wo', v === 'wo');
+      btns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === v ? 'true' : 'false'); });
+      if (remember) { try { localStorage.setItem('woOnbTaskView', v); } catch (e) {} }
+    }
     var head = mk('div', 't-head');
     head.appendChild(mk('h2', 't-title', 'Project checklist'));
-    names.forEach(function (o) { head.appendChild(mk('span', 't-sum' + tone(o), o + ' ' + tally[o].done + ' of ' + tally[o].all + ' done')); });
-    box.appendChild(head);
-    box.appendChild(mk('p', 't-note', 'Every step between today and your first filming day, and who owns it. WebOuts updates this list as work is finished.'));
-    var group = null;
-    tasks.forEach(function (t) {
-      var g = String(t.group || '');
-      if (g !== group) { group = g; if (g) box.appendChild(mk('div', 't-group', g)); }
-      var row = mk('div', 't-row' + (t.done ? ' t-done' : ''));
-      var tick = mk('span', 't-box', '\u2713');
-      tick.setAttribute('role', 'img');
-      tick.setAttribute('aria-label', t.done ? 'Done' : 'Not done yet');
-      row.appendChild(tick);
-      row.appendChild(mk('span', 't-name', t.name));
-      var own = mk('span', 't-own');
-      owners(t).forEach(function (o) { own.appendChild(mk('span', 't-pill' + tone(o), o)); });
-      row.appendChild(own);
-      box.appendChild(row);
+    var seg = mk('div', 't-seg');
+    seg.setAttribute('role', 'group');
+    seg.setAttribute('aria-label', 'Choose whose steps to show');
+    seg.appendChild(mk('span', 't-seglabel', 'Show'));
+    [['both', 'Both'], ['cl', client], ['wo', 'WebOuts']].forEach(function (o) {
+      var b = mk('button', '', o[1]);
+      b.type = 'button';
+      b.setAttribute('data-v', o[0]);
+      b.addEventListener('click', function () { setView(o[0], true); });
+      btns.push(b);
+      seg.appendChild(b);
     });
+    head.appendChild(seg);
+    box.appendChild(head);
+    box.appendChild(mk('p', 't-note', 'Every step between today and your first filming day. ' + client + '’s steps are listed first, WebOuts’ steps beside them. WebOuts updates this list as work is finished.'));
+
+    var cols = mk('div', 't-cols');
+    SIDES.forEach(function (sd) {
+      var mine = tasks.filter(function (t) { return onSide(t, sd.key); });
+      var done = mine.filter(function (t) { return t.done; }).length;
+      var h = mk('div', 't-colhead s-' + sd.key);
+      var top = mk('div', 't-coltop');
+      top.appendChild(mk('span', 't-colname', sd.name));
+      top.appendChild(mk('span', 't-count', done + ' of ' + mine.length + ' done'));
+      h.appendChild(top);
+      var bar = mk('div', 't-bar'), fill = mk('span', '');
+      fill.style.width = (mine.length ? Math.round(done / mine.length * 100) : 0) + '%';
+      bar.appendChild(fill);
+      h.appendChild(bar);
+      cols.appendChild(h);
+    });
+    box.appendChild(cols);
+
+    var groups = [];
+    tasks.forEach(function (t) { var g = String(t.group || ''); if (groups.indexOf(g) < 0) groups.push(g); });
+    groups.forEach(function (g, gi) {
+      if (g) {
+        var gh = mk('div', 't-group');
+        gh.appendChild(mk('span', 't-step', String(gi + 1)));
+        gh.appendChild(mk('span', '', g));
+        box.appendChild(gh);
+      }
+      var grid = mk('div', 't-grid');
+      SIDES.forEach(function (sd) {
+        var cell = mk('div', 't-cell s-' + sd.key);
+        cell.appendChild(mk('div', 't-celllabel', sd.name));
+        var mine = tasks.filter(function (t) { return String(t.group || '') === g && onSide(t, sd.key); });
+        if (!mine.length) cell.appendChild(mk('div', 't-empty', 'Nothing for ' + sd.name + ' in this stage.'));
+        mine.forEach(function (t) {
+          var row = mk('div', 't-row' + (t.done ? ' t-done' : ''));
+          var tick = mk('span', 't-box', '\u2713');
+          tick.setAttribute('role', 'img');
+          tick.setAttribute('aria-label', t.done ? 'Done' : 'Not done yet');
+          row.appendChild(tick);
+          row.appendChild(mk('span', 't-name', t.name));
+          if (owners(t).length > 1) row.appendChild(mk('span', 't-shared', 'Shared'));
+          cell.appendChild(row);
+        });
+        grid.appendChild(cell);
+      });
+      box.appendChild(grid);
+    });
+    var saved = 'both';
+    try { saved = localStorage.getItem('woOnbTaskView') || 'both'; } catch (e) {}
+    setView(saved === 'cl' || saved === 'wo' ? saved : 'both', false);
   }
   function applyDone(str) {
     doneSecs = {};
