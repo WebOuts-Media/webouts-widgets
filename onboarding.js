@@ -5,6 +5,7 @@
  * No secrets here; it posts to the public n8n onboarding API. */
 (function () {
   var API = "https://webouts.app.n8n.cloud/webhook/onboarding-api";
+  var TASKS = "https://webouts.app.n8n.cloud/webhook/onboarding-tasks";
   var UPLOAD = "https://webouts.app.n8n.cloud/webhook/onboarding-upload";
   var MAX = 10 * 1024 * 1024; // 10 MB per file
 
@@ -607,6 +608,22 @@
   #wo-onb .sec .due.past,#wo-onb .sec .due.soon{color:#b3411f;background:#FDEFE9;border-color:#f3c9bb}
   #wo-onb .sec .due.warn{color:#8a5a00;background:#FFF6E3;border-color:#f2dca6}
   #wo-onb .sec .due.none{color:#9aa3b0;background:transparent;border:1px dashed #dbe1e9;font-weight:500}
+  #wo-onb .sec.step-sec .done-toggle{cursor:default}
+  #wo-onb .sec.step-sec:not(.filled) .done-toggle:hover .check{border-color:#cdd4df}
+  #wo-onb .sec.step-sec:not(.filled) .done-toggle:hover .done-label{color:#9aa4b4}
+  #wo-onb .steps{margin:10px 0 0}
+  #wo-onb .st-row{display:grid;grid-template-columns:24px 1fr auto;gap:11px;align-items:center;padding:10px 0;border-top:1px solid #eef1f5}
+  #wo-onb .st-row:first-child{border-top:0}
+  #wo-onb .st-box{width:22px;height:22px;padding:0;border:2px solid #cdd4df;border-radius:6px;background:#fff;color:transparent;font-size:14px;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit}
+  #wo-onb .st-box:hover{border-color:#2F8F5C}
+  #wo-onb .st-box:disabled{cursor:default;opacity:.7}
+  #wo-onb .st-row.st-on .st-box{background:#2F8F5C;border-color:#2F8F5C;color:#fff}
+  #wo-onb .st-name{font-size:14px;color:#1d2b45;line-height:1.4}
+  #wo-onb .st-row.st-on .st-name{color:#7b8698}
+  #wo-onb .st-own{font-size:11px;font-weight:700;letter-spacing:.3px;border-radius:20px;padding:3px 9px;white-space:nowrap;color:#07378C;background:#eef2fb;border:1px solid #d6e3ff}
+  #wo-onb .st-own.st-wo{color:#b3411f;background:#FDEFE9;border-color:#f3c9bb}
+  #wo-onb .st-own.st-both{color:#4a5568;background:#f2f4f7;border-color:#dfe4ea}
+  #wo-onb .st-err{display:none;margin:10px 0 0;font-size:13px;color:#b3411f}
   #wo-onb .sec .chev{width:9px;height:9px;border-right:2px solid #9aa4b4;border-bottom:2px solid #9aa4b4;transform:rotate(-45deg);transition:transform .2s ease;flex:0 0 auto;margin-top:-3px}
   #wo-onb .sec.open .chev{transform:rotate(45deg)}
   #wo-onb .sec:not(.open) .intro,#wo-onb .sec:not(.open) .secbody{display:none}
@@ -699,6 +716,8 @@
     #wo-onb .wo-cs-grid{padding:12px}
     #wo-onb .sec .due{font-size:10px;padding:2px 7px;letter-spacing:.2px}
     #wo-onb .sec.has-due .done-label{display:none}
+    #wo-onb .st-row{grid-template-columns:24px 1fr;row-gap:4px}
+    #wo-onb .st-own{grid-column:2;justify-self:start}
     /* the placeholder is an alignment aid; on a phone it would just wrap the title */
     #wo-onb .sec .due.none{display:none}
     #wo-onb .wo-cs-card{flex:1 1 100%}
@@ -893,6 +912,42 @@
         <div class="secbody">
           <div class="help">Anything else we should know that didn’t fit above.</div>
           <textarea data-key="misc.notes" aria-label="Anything else"></textarea>
+        </div>
+      </div>
+
+      <div class="sec step-sec" data-sec="vendor" style="display:none">
+        <h2><span class="num">11</span> Vendor setup &amp; budget</h2>
+        <div class="secbody">
+          <div class="help">Getting WebOuts approved as a vendor and the budget signed off. Check a step off when it’s finished. WebOuts does the same for ours.</div>
+          <div class="steps"></div>
+          <div class="st-err" role="alert"></div>
+        </div>
+      </div>
+
+      <div class="sec step-sec" data-sec="roster" style="display:none">
+        <h2><span class="num">12</span> Physician roster</h2>
+        <div class="secbody">
+          <div class="help">How we work out which physicians to feature first. Check a step off when it’s finished. WebOuts does the same for ours.</div>
+          <div class="steps"></div>
+          <div class="st-err" role="alert"></div>
+        </div>
+      </div>
+
+      <div class="sec step-sec" data-sec="prototype" style="display:none">
+        <h2><span class="num">13</span> Prototype script &amp; sample video</h2>
+        <div class="secbody">
+          <div class="help">One script and one sample video to approve before we film everyone. Check a step off when it’s finished. WebOuts does the same for ours.</div>
+          <div class="steps"></div>
+          <div class="st-err" role="alert"></div>
+        </div>
+      </div>
+
+      <div class="sec step-sec" data-sec="launch" style="display:none">
+        <h2><span class="num">14</span> Systems &amp; launch</h2>
+        <div class="secbody">
+          <div class="help">Getting booking and scheduling ready to go live. Check a step off when it’s finished. WebOuts does the same for ours.</div>
+          <div class="steps"></div>
+          <div class="st-err" role="alert"></div>
         </div>
       </div>
 
@@ -1243,7 +1298,7 @@
     h.insertAdjacentHTML('beforeend', '<span class="done-toggle" role="checkbox" tabindex="0" aria-checked="false" aria-label="Mark this section completed" title="This Completed checkbox lets your team know this task is done. WebOuts will not check it for you."><span class="check" aria-hidden="true">✓</span><span class="done-label">Completed</span></span><span class="chev" aria-hidden="true"></span>');
     var toggle = h.querySelector('.done-toggle');
     function toggleDone() {
-      if (locked) return;
+      if (locked || sec.classList.contains('step-sec')) return; // step boxes complete themselves
       var slug = sec.getAttribute('data-sec');
       var on = sec.classList.toggle('filled');
       if (on) doneSecs[slug] = 1; else delete doneSecs[slug];
@@ -1260,7 +1315,17 @@
     }
     h.addEventListener('click', toggleOpen);
     h.addEventListener('keydown', function (e) { if (e.target === h && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleOpen(); } });
+    if (sec.classList.contains('step-sec')) {
+      toggle.setAttribute('aria-label', 'Completed when every step is done');
+      toggle.setAttribute('aria-disabled', 'true');
+      toggle.removeAttribute('tabindex');
+      toggle.title = 'This marks itself Completed once every step below is checked off.';
+    }
   });
+  // The step boxes show project steps kept on the Monday record. They are not part of the
+  // information the client submits, so they stay out of the section count and the submit check.
+  var infoSecs = secs.filter(function (s) { return !s.classList.contains('step-sec'); });
+  function shown(sec) { return sec.style.display !== 'none'; }
   if (secs[0]) { secs[0].classList.add('open'); secs[0].querySelector('h2').setAttribute('aria-expanded', 'true'); }
   // Deadlines are set by WebOuts on the Monday record and are read-only here.
   var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1318,13 +1383,72 @@
     });
     // Infinity !== Infinity is false, so undated sections fall through to original order.
     order.sort(function (a, b) { return a.key !== b.key ? (a.key < b.key ? -1 : 1) : a.i - b.i; });
-    order.forEach(function (o, idx) {
+    var idx = 0;
+    order.forEach(function (o) {
       form.insertBefore(o.sec, submit); // before the submit button, which stays last
+      if (!shown(o.sec)) return; // a step box this client has no steps for
       var n = o.sec.querySelector('h2 .num');
       if (n) n.textContent = String(idx + 1);
       o.sec.classList.toggle('open', idx === 0);
       var h = o.sec.querySelector('h2');
       if (h) h.setAttribute('aria-expanded', idx === 0 ? 'true' : 'false');
+      idx++;
+    });
+  }
+  // Steps come from the subitems of the client's Monday item. The Form Checklist Group
+  // column picks the box; a box with no steps stays hidden.
+  var STEP_SECS = { 'Vendor setup & budget': 'vendor', 'Physician roster': 'roster', 'Prototype script & sample video': 'prototype', 'Systems & launch': 'launch' };
+  function applySteps(tasks) {
+    tasks = Array.isArray(tasks) ? tasks : [];
+    secs.forEach(function (sec) {
+      if (!sec.classList.contains('step-sec')) return;
+      var slug = sec.getAttribute('data-sec');
+      var mine = tasks.filter(function (t) { return t && t.name && STEP_SECS[t.group] === slug; });
+      var box = sec.querySelector('.steps'), err = sec.querySelector('.st-err');
+      box.innerHTML = '';
+      sec.style.display = mine.length ? '' : 'none';
+      function mark() {
+        var all = mine.length > 0 && mine.every(function (t) { return t.done; });
+        sec.classList.toggle('filled', all);
+        sec.querySelector('.done-toggle').setAttribute('aria-checked', all ? 'true' : 'false');
+      }
+      mine.forEach(function (t) {
+        var row = document.createElement('div');
+        var tick = document.createElement('button');
+        tick.type = 'button'; tick.className = 'st-box'; tick.textContent = '\u2713';
+        tick.setAttribute('role', 'checkbox');
+        tick.setAttribute('aria-label', t.name);
+        function paint() {
+          row.className = 'st-row' + (t.done ? ' st-on' : '');
+          tick.setAttribute('aria-checked', t.done ? 'true' : 'false');
+        }
+        tick.disabled = locked;
+        tick.addEventListener('click', function () {
+          if (locked || preview || tick.disabled) return;
+          var want = !t.done;
+          tick.disabled = true; err.style.display = 'none';
+          postJSON(TASKS, { token: token, op: 'update', id: t.id, done: want })
+            .then(function (res) {
+              if (!res || res.ok !== true) throw new Error((res && res.error) || '');
+              t.done = want; paint(); mark();
+            })
+            .catch(function (e) {
+              err.textContent = (e && e.message && !/^HTTP |Failed to fetch|NetworkError/.test(e.message)) ? e.message : 'That step could not be updated just now. Please try again.';
+              err.style.display = 'block';
+            })
+            .then(function () { tick.disabled = locked; });
+        });
+        var name = document.createElement('span'); name.className = 'st-name'; name.textContent = t.name;
+        var o = String(t.owner || '');
+        var wo = /webouts/i.test(o), both = wo && o.replace(/webouts/i, '').replace(/[+&,\s]|and/gi, '').length > 0;
+        var own = document.createElement('span');
+        own.className = 'st-own' + (both ? ' st-both' : wo ? ' st-wo' : '');
+        own.textContent = both ? 'Both' : o;
+        row.appendChild(tick); row.appendChild(name); row.appendChild(own);
+        paint();
+        box.appendChild(row);
+      });
+      mark();
     });
   }
   function applyDone(str) {
@@ -1620,8 +1744,8 @@
     }
   }
   function updateProgress() {
-    var total = secs.length;
-    var done = secs.filter(function (s) { return s.classList.contains('filled'); }).length;
+    var total = infoSecs.length;
+    var done = infoSecs.filter(function (s) { return s.classList.contains('filled'); }).length;
     var fill = document.getElementById('wo-progfill');
     var txt = document.getElementById('wo-progtxt');
     if (fill) fill.style.width = (total ? Math.round(done / total * 100) : 0) + '%';
@@ -1642,8 +1766,8 @@
       }
       return;
     }
-    var total = secs.length;
-    var done = secs.filter(function (s) { return s.classList.contains('filled'); }).length;
+    var total = infoSecs.length;
+    var done = infoSecs.filter(function (s) { return s.classList.contains('filled'); }).length;
     // Confirm only when sections are still unchecked — a fully-ticked form is a
     // deliberate submit and goes straight through.
     if (done < total &&
@@ -1682,12 +1806,13 @@
     brandUp.load(data['brandGuide.files']);
     applyDone(data._done);
     applyDue(res && res.due);
-    reorderByDue(res && res.due);
-    updateProgress();
-    updateSubmit();
     // Read the real Monday Stage, not the copy in the blob. The blob only ever held
     // 'Submitted for Review', so a staff lock never actually reached the client.
     lockIfNeeded(res.stage || data._stage);
+    applySteps(res && res.tasks); // after applyDone and the lock, before the numbering
+    reorderByDue(res && res.due);
+    updateProgress();
+    updateSubmit();
     var has = Object.keys(data).length > 0;
     loaded = true;
     if (locked) setSave('idle', 'Locked');
