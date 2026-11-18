@@ -2,11 +2,11 @@
  * The Bricks page only holds a tiny loader (see onboarding-loader.html).
  * The page serves the "live" branch, NOT main, so pushing to main changes nothing
  * for clients. Publish with: git push origin main:live --force-with-lease
- * No secrets here; it posts to the public n8n onboarding API. */
+ * No secrets here; it posts to webouts.com, which relays to the n8n onboarding API. */
 (function () {
-  var API = "https://webouts.app.n8n.cloud/webhook/onboarding-api";
-  var TASKS = "https://webouts.app.n8n.cloud/webhook/onboarding-tasks";
-  var UPLOAD = "https://webouts.app.n8n.cloud/webhook/onboarding-upload";
+  var API = "https://webouts.com/wp-json/webouts/v1/onboarding/api";
+  var TASKS = "https://webouts.com/wp-json/webouts/v1/onboarding/tasks";
+  var UPLOAD = "https://webouts.com/wp-json/webouts/v1/onboarding/upload";
   var MAX = 10 * 1024 * 1024; // 10 MB per file
 
   // ---- table definitions (rendered + wired generically) ----
